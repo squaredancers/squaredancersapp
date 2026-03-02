@@ -1,0 +1,10 @@
+dist/
+node_modules/
+temp/
+server/credentials.json
+server/sqlite3.exe
+server/squaredance.db
+server/src/sendEmail.js
+server/package-lock.json
+server/server.cert
+server/server.key

@@ -1,0 +1,35 @@
+{
+  "name": "squaredancerapp",
+  "version": "1.0.0",
+  "description": "An app to track square dancing events",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "create": "node dist/seedDb.js",
+    "devstart": "nodemon dist/server.js",
+    "typewatch": "tsc --watch",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@fastify/jwt": "^10.0.0",
+    "@mikro-orm/core": "^6.6.2",
+    "@mikro-orm/reflection": "^6.6.2",
+    "@mikro-orm/seeder": "^6.6.2",
+    "@mikro-orm/sqlite": "^6.6.2",
+    "argon2": "^0.44.0",
+    "dotenv": "^17.2.3",
+    "fastify": "^5.6.2",
+    "fastify-https-always": "^2.0.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@mikro-orm/cli": "^6.6.2",
+    "@types/node": "^25.0.1",
+    "mkcert": "^3.2.0",
+    "nodemon": "^3.1.11",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}
