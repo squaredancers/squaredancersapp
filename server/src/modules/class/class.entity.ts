@@ -6,8 +6,8 @@ import {
   Property,
 } from "@mikro-orm/core";
 import { ClassInfo } from "../classInfo/classInfo.entity.js";
+import { ClassRegistrant } from "../classRegistrant/classRegistrant.entity.js";
 import { BaseEntity } from "../common/base.entity.js";
-import { Payments } from "../payments/payments.entity.js";
 
 @Entity()
 export class Class extends BaseEntity {
@@ -20,9 +20,13 @@ export class Class extends BaseEntity {
   @Property()
   active!: boolean;
 
-  // Note: this is a class list of students.  When the student
-  // initially enrolls for a class the payment record paid field is set
-  // to false.  Once, they have paid the paid field is set to true.
+  @Property({ default: "" })
+  googleFormsName!: string;
+
+  @Property({ default: "" })
+  mailChimpName!: string;
+
+  // Note: this is a class list of students.
   @OneToMany({ mappedBy: "class" })
-  payments = new Collection<Payments>(this);
+  registrants = new Collection<ClassRegistrant>(this);
 }

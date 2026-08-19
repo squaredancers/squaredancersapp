@@ -29,4 +29,7 @@ export class ClassInfo extends BaseEntity {
 
   @Property()
   hours!: number;
+
+  @Property({ default: "" })
+  googleFormsName!: string;
 }

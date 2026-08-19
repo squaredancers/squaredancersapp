@@ -6,6 +6,7 @@
     "target": "ES2022",
     "strict": true,
     "outDir": "dist",
+    "rootDir": "src",
     "declaration": true,
     "experimentalDecorators": true
   },

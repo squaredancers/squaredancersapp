@@ -32,7 +32,7 @@ abstract class BaseServer<
   public abstract mapTableToServer(row: RowTableType): RowServerType;
   public abstract mapServerToTable(row: RowServerType): RowTableType;
 
-  private getConfig(method: Method, url: string, data: string) {
+  getConfig(method: Method, url: string, data: string) {
     const token = useUserStore.getState().token;
     const config: AxiosRequestConfig = {
       url,

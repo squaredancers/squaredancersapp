@@ -4,19 +4,26 @@ import { fastify, FastifyError } from "fastify";
 import { registerCallerRoutes } from "./modules/caller/routes.js";
 import { registerClassRoutes } from "./modules/class/routes.js";
 import { registerClassInfoRoutes } from "./modules/classInfo/routes.js";
+import { registerClassRegistrantRoutes } from "./modules/classRegistrant/routes.js";
 import { registerEnvRoutes } from "./modules/env/routes.js";
 import { registerLocationRoutes } from "./modules/location/routes.js";
-import { registerPaymentRoutes } from "./modules/payments/routes.js";
+import { registerReportRoutes } from "./modules/reports/routes.js";
 import { registerRoleRoutes } from "./modules/role/routes.js";
+import { registerSettingsRoutes } from "./modules/settings/routes.js";
 import { registerUserRoutes } from "./modules/user/routes.js";
 
+import fastifyStatic from "@fastify/static";
 import "dotenv/config";
 import { readFileSync } from "fs";
+import { fileURLToPath } from "node:url";
 import path from "path";
 import { initORM } from "./db.js";
 import { AuthError } from "./modules/common/roleUtils.js";
 import { registerEventRoutes } from "./modules/event/routes.js";
 import { User } from "./modules/user/user.entity.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -100,6 +107,11 @@ export async function bootstrap(port = 3001) {
     reply.status(error.statusCode ?? 500).send({ error: error.message });
   });
 
+  app.register(fastifyStatic, {
+    root: path.join(__dirname, "public"), // Folder where your static files live
+    prefix: "/", // URL path to access the files (e.g., /index.html)
+  });
+
   // register routes here
   // ...
   app.register(registerEnvRoutes, { prefix: "api/env" });
@@ -108,9 +120,11 @@ export async function bootstrap(port = 3001) {
   app.register(registerCallerRoutes, { prefix: "api/caller" });
   app.register(registerClassInfoRoutes, { prefix: "api/classinfo" });
   app.register(registerClassRoutes, { prefix: "api/class" });
-  app.register(registerPaymentRoutes, { prefix: "api/payments" });
+  app.register(registerClassRegistrantRoutes, { prefix: "api/registrant" });
   app.register(registerRoleRoutes, { prefix: "api/roles" });
   app.register(registerEventRoutes, { prefix: "api/event" });
+  app.register(registerReportRoutes, { prefix: "api/report" });
+  app.register(registerSettingsRoutes, { prefix: "api/settings" });
 
   const url = await app.listen({ port });
 

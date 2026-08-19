@@ -3,6 +3,8 @@ export interface ClassesServerType {
   name: string;
   classInfo: { id: number; name: string } | number;
   active: boolean;
+  googleFormsName: string;
+  mailChimpName: string;
 }
 
 export interface ClassesTableType {
@@ -11,4 +13,6 @@ export interface ClassesTableType {
   classInfoName: string;
   classInfoId: number;
   active: boolean;
+  googleFormsName: string;
+  mailChimpName: string;
 }

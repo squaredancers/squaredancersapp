@@ -9,7 +9,9 @@ import { Class } from "./class.entity.js";
 const classSchema = z.object({
   classInfo: z.number().nonoptional(),
   name: z.string().nonoptional(),
-  active: z.boolean(),
+  active: z.boolean().nonoptional(),
+  googleFormsName: z.string().nonoptional(),
+  mailChimpName: z.string().nonoptional(),
 });
 
 export const registerClassRoutes = async (app: FastifyInstance) => {
@@ -33,16 +35,30 @@ export const registerClassRoutes = async (app: FastifyInstance) => {
         Class,
         {},
         {
-          populate: ["classInfo"],
+          populate: ["classInfo", "registrants", "registrants.user"],
           orderBy: { name: QueryOrder.DESC },
-          fields: ["name", "active", "classInfo.id", "classInfo.name"],
+          fields: [
+            "name",
+            "active",
+            "googleFormsName",
+            "mailChimpName",
+            "classInfo.id",
+            "classInfo.name",
+            "registrants.id",
+            "registrants.user",
+            "registrants.dateRegistered",
+            "registrants.user.firstName",
+            "registrants.user.lastName",
+            "registrants.paymentType",
+            "registrants.paidSession",
+          ],
         },
       );
     }
 
     return result;
   });
-
+  0;
   app.post("/", async (request) => {
     verifyRole(request?.userInfo?.roles ?? null, []);
 

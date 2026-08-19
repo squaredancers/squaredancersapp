@@ -20,6 +20,7 @@ export class LocationServerTypeClass extends BaseServer<
     const { id, name, address, phone } = location;
     const rent = Math.trunc(parseFloat(location.rent) * 100);
 
+    console.log("Table to server:", location);
     return {
       id,
       name,
@@ -33,6 +34,7 @@ export class LocationServerTypeClass extends BaseServer<
     const { id, name, address, phone } = location;
     const rent = (location.rent / 100).toFixed(2);
 
+    console.log("Server to Table", location);
     return {
       id,
       name,
@@ -83,6 +85,13 @@ class LocationTableClass extends BaseTable<
       useValidationStore.getState().setValidationErrors;
 
     return [
+      {
+        accessorKey: "id",
+        header: "",
+        visibleInShowHideMenu: false,
+        enableEditing: false, // Disables editing
+        Edit: () => null, // Hides the field in the edit popup
+      },
       {
         accessorKey: "name",
         header: "Name",

@@ -12,6 +12,7 @@ const classInfoSchema = z.object({
   day: z.enum(Object.values(DaysType)).nonoptional(),
   caller: z.number().nonoptional(),
   hours: z.number().nonoptional(),
+  googleFormsName: z.string().nonoptional(),
 });
 
 export const registerClassInfoRoutes = async (app: FastifyInstance) => {
@@ -52,8 +53,10 @@ export const registerClassInfoRoutes = async (app: FastifyInstance) => {
           "name",
           "day",
           "hours",
+          "googleFormsName",
           "location.id",
           "location.name",
+          "location.rent",
           "caller.id",
           "caller.user.firstName",
           "caller.user.lastName",
@@ -71,6 +74,7 @@ export const registerClassInfoRoutes = async (app: FastifyInstance) => {
             "name",
             "day",
             "hours",
+            "googleFormsName",
             "location.id",
             "location.name",
             "caller.id",

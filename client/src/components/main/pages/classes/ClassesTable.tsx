@@ -39,13 +39,16 @@ export class ClassesServerTypeClass extends BaseServer<
   }
 
   public mapTableToServer(classes: ClassesTableType): ClassesServerType {
-    const { id, name, classInfoId, active } = classes;
+    const { id, name, classInfoId, active, googleFormsName, mailChimpName } =
+      classes;
 
     return {
       id,
       name,
       classInfo: classInfoId,
       active,
+      googleFormsName,
+      mailChimpName,
     };
   }
 
@@ -59,6 +62,8 @@ export class ClassesServerTypeClass extends BaseServer<
       id: classes.id,
       name: classes.name,
       active: classes.active,
+      googleFormsName: classes.googleFormsName,
+      mailChimpName: classes.mailChimpName,
       classInfoId: classInfo.id,
       classInfoName: classInfo.name,
     };
@@ -74,7 +79,7 @@ class ClassesTableClass extends BaseTable<
     super("classes", new ClassesServerTypeClass(), "classes", true);
   }
 
-  MainCallerTableComponent = () => {
+  MainClassTableComponent = () => {
     const MainTableComponent = this.MainTableComponent;
 
     return <MainTableComponent />;
@@ -114,6 +119,16 @@ class ClassesTableClass extends BaseTable<
             sx={{ cursor: "not-allowed" }}
           />
         ),
+      },
+      {
+        accessorKey: "googleFormsName",
+        header: "Google forms name",
+        enableEditing: false,
+      },
+      {
+        accessorKey: "mailChimpName",
+        header: "MailChimp name",
+        enableEditing: false,
       },
     ];
   }
@@ -171,6 +186,8 @@ class ClassesTableClass extends BaseTable<
               classInfoName: "",
               classInfoId: 0,
               active: true,
+              googleFormsName: "",
+              mailChimpName: "",
             });
           }
         };
@@ -320,6 +337,40 @@ class ClassesTableClass extends BaseTable<
                 />
               }
               label="active"
+            />
+            <TextField
+              label="Google forms name"
+              name="googleFormsName"
+              required={false}
+              value={values?.googleFormsName ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.googleFormsName}
+              helperText={validationErrors?.googleFormsName}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  googleFormName: undefined,
+                })
+              }
+            />
+            <TextField
+              label="MailChimp name"
+              name="mailChimpName"
+              required={false}
+              value={values?.mailChimpName ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.mailChimpName}
+              helperText={validationErrors?.mailChimpName}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  mailChimpName: undefined,
+                })
+              }
             />
             <Box
               sx={{

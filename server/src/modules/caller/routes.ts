@@ -1,10 +1,10 @@
+import { Loaded, QueryOrder, wrap } from "@mikro-orm/core";
 import { FastifyInstance, RouteShorthandOptions } from "fastify";
-import { initORM } from "../../db.js";
-import { wrap, Loaded, QueryOrder } from "@mikro-orm/core";
-import { Caller } from "./caller.entity.js";
-import { RolesType } from "../role/roleType.js";
-import { verifyRole } from "../common/roleUtils.js";
 import z from "zod";
+import { initORM } from "../../db.js";
+import { verifyRole } from "../common/roleUtils.js";
+import { RolesType } from "../role/roleType.js";
+import { Caller } from "./caller.entity.js";
 
 const callerSchema = z.object({
   user: z.number().nonoptional(),
