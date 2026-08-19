@@ -1,5 +1,7 @@
+import styled from "@emotion/styled";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import {
   Box,
   Button,
@@ -9,6 +11,8 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import {
   QueryClient,
   QueryClientProvider,
@@ -37,10 +41,15 @@ import useValidationStore from "../../../../stores/useValidationStore.js";
 import StringUtils from "../../../../utils/stringUtils.js";
 import ConfirmationDialog from "../../../common/ConfirmationDialog.js";
 import BaseServer from "./baseServer.js";
+import { exportToPdf } from "./pdfUtils.js";
 import IDField from "./types.js";
 
 const queryClient = new QueryClient();
 
+const LeftAlignButtons = styled.div`
+  display: flex;
+  justify-content: start;
+`;
 export abstract class BaseTable<
   RowTableType extends IDField,
   RowServerType extends IDField,
@@ -67,9 +76,11 @@ export abstract class BaseTable<
     const InternalTableComponent = this.TableComponent;
 
     return (
-      <QueryClientProvider client={queryClient}>
-        <InternalTableComponent />
-      </QueryClientProvider>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <QueryClientProvider client={queryClient}>
+          <InternalTableComponent />
+        </QueryClientProvider>
+      </LocalizationProvider>
     );
   };
 
@@ -94,6 +105,16 @@ export abstract class BaseTable<
     table: MRT_TableInstance<RowTableType>,
   ): React.FC | null {
     return null;
+  }
+
+  public getLeftToolBarActions(
+    table: MRT_TableInstance<RowTableType>,
+  ): React.FC | null {
+    return null;
+  }
+
+  public getColumnVisibility(): { [id: string]: boolean } | undefined {
+    return undefined;
   }
 
   TableComponent = (props: {}) => {
@@ -150,12 +171,9 @@ export abstract class BaseTable<
       async ({ values, table }: { values: any; table: any }) => {
         const newValidationErrors = this.validateRow(values);
 
-        console.log("in save caller", newValidationErrors);
         if (Object.values(newValidationErrors).some((error) => error)) {
           try {
-            console.log("Before set validation errors");
             setValidationErrors(newValidationErrors);
-            console.log("After setvalidation errors");
           } catch (exc) {
             console.log(exc);
           }
@@ -178,6 +196,23 @@ export abstract class BaseTable<
       editDisplayMode: this.isUseCustomEditDialog ? "custom" : "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
       enableEditing: true,
       enableRowActions: true,
+      initialState: {
+        columnVisibility: this.getColumnVisibility(),
+      },
+      muiEditRowDialogProps: ({ table, row }) => ({
+        open: !!table.getState().editingRow, // Ensure this is present
+        onClose: () => table.setEditingRow(null),
+        PaperProps: {
+          sx: {
+            // Targets the main dialog content area padding
+            "& .MuiDialogContent-root": {
+              marginTop: "32px",
+            },
+            // Alternatively, adjust the overall dialog paper padding/margin
+            marginTop: "16px",
+          },
+        },
+      }),
       getRowId: (row) => `${row.id}`,
       muiToolbarAlertBannerProps: isLoadingRowTypeError
         ? {
@@ -248,21 +283,27 @@ export abstract class BaseTable<
       ),
 
       renderTopToolbarCustomActions: ({ table }) => {
+        const CustomActions = useMemo(() => {
+          return this.getLeftToolBarActions(table);
+        }, [table]);
         return (
-          <Button
-            variant="contained"
-            onClick={() => {
-              const defaultRow = this.defaultCreateRow();
+          <LeftAlignButtons>
+            <Button
+              variant="contained"
+              onClick={() => {
+                const defaultRow = this.defaultCreateRow();
 
-              if (defaultRow === null) {
-                table.setCreatingRow(true);
-              } else {
-                table.setCreatingRow(createRow(table, defaultRow));
-              }
-            }}
-          >
-            {`Create New ${capitalRowName}`}
-          </Button>
+                if (defaultRow === null) {
+                  table.setCreatingRow(true);
+                } else {
+                  table.setCreatingRow(createRow(table, defaultRow));
+                }
+              }}
+            >
+              {`Create New ${capitalRowName}`}
+            </Button>
+            {CustomActions ? <CustomActions /> : null}
+          </LeftAlignButtons>
         );
       },
 
@@ -278,6 +319,29 @@ export abstract class BaseTable<
             <MRT_ToggleGlobalFilterButton table={table} />
             {CustomToolBarActions ? <CustomToolBarActions /> : null}
             {/* Built-in buttons (must pass in the table prop) */}
+            <IconButton
+              onClick={() => {
+                const rows = table.getFilteredRowModel().rows.map((row) => {
+                  return columns.map((col) => {
+                    const colKey: string = col.accessorKey ?? "";
+                    let value = row.original[colKey];
+
+                    if (Array.isArray(value)) {
+                      value = value.join(",");
+                    }
+
+                    return value as string;
+                  });
+                });
+
+                exportToPdf(
+                  columns as { header: string; accessorKey: string }[],
+                  rows,
+                );
+              }}
+            >
+              <PictureAsPdfIcon />
+            </IconButton>
             <MRT_ToggleDensePaddingButton table={table} />
             <MRT_ToggleFiltersButton table={table} />
             <MRT_ShowHideColumnsButton table={table} />
@@ -296,7 +360,6 @@ export abstract class BaseTable<
     const closeDialog = useCallback(
       async (okPressed: boolean) => {
         if (okPressed) {
-          console.log("Row To delete", rowToDelete);
           await deleteRowType(rowToDelete!);
         }
 
@@ -329,7 +392,11 @@ export abstract class BaseTable<
 
     return useMutation({
       mutationFn: async (row: RowTableType) => {
-        await this.server.createRow(row);
+        try {
+          await this.server.createRow(row);
+        } catch (exc) {
+          console.log(exc);
+        }
       },
 
       onSettled: () =>
@@ -367,6 +434,19 @@ export abstract class BaseTable<
     return useMutation({
       mutationFn: async (row: RowTableType) => {
         await this.server.deleteRow(row);
+      },
+
+      onSettled: () =>
+        queryClient.invalidateQueries({ queryKey: [this.queryKey] }), //refetch rows after mutation
+    });
+  }
+
+  // Execute a custom action
+  useCustomAction() {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async () => {
+        // Do nothing.  We just want to get all the rows refetched.
       },
 
       onSettled: () =>

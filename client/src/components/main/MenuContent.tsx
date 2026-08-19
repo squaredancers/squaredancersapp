@@ -1,10 +1,12 @@
 import CampaignIcon from "@mui/icons-material/CampaignRounded";
 import CelebrationIcon from "@mui/icons-material/CelebrationRounded";
+import RegistrantIcon from "@mui/icons-material/Groups";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import LocationIcon from "@mui/icons-material/LocationPin";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SchoolIcon from "@mui/icons-material/SchoolRounded";
+import SummarizeIcon from "@mui/icons-material/Summarize";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -21,6 +23,8 @@ const mainListItems = [
   { text: Pages.Locations, icon: <LocationIcon /> },
   { text: Pages.ClassInfo, icon: <SchoolIcon /> },
   { text: Pages.Classes, icon: <SchoolIcon /> },
+  { text: Pages.Registrants, icon: <RegistrantIcon /> },
+  { text: Pages.Reports, icon: <SummarizeIcon /> },
 ];
 
 const secondaryListItems = [

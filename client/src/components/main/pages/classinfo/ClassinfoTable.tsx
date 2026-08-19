@@ -41,7 +41,7 @@ export class ClassInfoServerTypeClass extends BaseServer<
   }
 
   public mapTableToServer(classInfo: ClassInfoTableType): ClassInfoServerType {
-    const { id, name, day, locationId, callerId } = classInfo;
+    const { id, name, day, locationId, callerId, googleFormsName } = classInfo;
     const hours = Math.trunc(parseFloat(classInfo.hours) * 100);
 
     return {
@@ -49,6 +49,7 @@ export class ClassInfoServerTypeClass extends BaseServer<
       name,
       day,
       hours,
+      googleFormsName,
       location: locationId,
       caller: callerId,
     };
@@ -60,23 +61,30 @@ export class ClassInfoServerTypeClass extends BaseServer<
       hourlyRate?: number;
       user: { firstName: string; lastName: string; id: number };
     };
-    const { name: locationName, id: locationId } = classInfo.location as {
+    const {
+      name: locationName,
+      id: locationId,
+      rent,
+    } = classInfo.location as {
       id: number;
       name: string;
+      rent?: number;
     };
     const hours = (classInfo.hours / 100).toFixed(2);
-    const { id, name, day } = classInfo;
+    const { id, name, day, googleFormsName } = classInfo;
 
     return {
       id,
       name,
       day,
       hours,
+      googleFormsName,
       callerName: `${caller.user.firstName} ${caller.user.lastName}`,
       locationName,
       callerId: caller.id,
       locationId,
       hourlyRate: caller.hourlyRate,
+      rent,
     };
   }
 }
@@ -90,7 +98,7 @@ class ClassInfoTableClass extends BaseTable<
     super("classinfo", new ClassInfoServerTypeClass(), "class info", true);
   }
 
-  MainCallerTableComponent = () => {
+  MainClassInfoTableComponent = () => {
     const MainTableComponent = this.MainTableComponent;
 
     return <MainTableComponent />;
@@ -128,6 +136,7 @@ class ClassInfoTableClass extends BaseTable<
       callerName: "",
       locationId: 0,
       locationName: "",
+      googleFormsName: "",
     };
   };
 
@@ -156,6 +165,7 @@ class ClassInfoTableClass extends BaseTable<
         accessorKey: "locationName",
         header: "Location name",
       },
+      { accessorKey: "googleFormsName", header: "Google forms name" },
     ];
   }
 
@@ -287,7 +297,7 @@ class ClassInfoTableClass extends BaseTable<
                 onChange={(event) => {
                   const callerId = event.target.value;
                   const caller = callers.find(
-                    (caller) => (caller.id = callerId),
+                    (caller) => caller.id === callerId,
                   );
 
                   setValues({
@@ -390,7 +400,23 @@ class ClassInfoTableClass extends BaseTable<
                 </FormHelperText>
               </Conditional>
             </FormControl>
-
+            <TextField
+              label="Google forms name"
+              name="googleFormsName"
+              required={true}
+              value={values?.googleFormsName ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.googleFormsName}
+              helperText={validationErrors?.googleFormsName}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  googleFormsName: undefined,
+                })
+              }
+            />
             <Box
               sx={{
                 display: "flex",

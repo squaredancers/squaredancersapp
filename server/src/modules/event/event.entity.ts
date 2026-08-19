@@ -32,4 +32,7 @@ export class Event extends BaseEntity {
 
   @Property()
   callerCharge!: number;
+
+  @Property({ default: 0 })
+  hours!: number;
 }

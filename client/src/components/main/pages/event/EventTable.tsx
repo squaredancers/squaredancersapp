@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import axios from "axios";
 import dayjs from "dayjs";
 import {
   MRT_TableInstance,
@@ -38,6 +39,20 @@ export class EventServerTypeClass extends BaseServer<
 > {
   public constructor() {
     super("event");
+  }
+
+  async populateEvent(startDate: Date, endDate: Date): Promise<void> {
+    const requestConfig = this.getConfig(
+      "POST",
+      this.createPath() + "/populate",
+      JSON.stringify({ startDate, endDate }),
+    );
+
+    try {
+      await axios(requestConfig);
+    } catch (exc) {}
+
+    return;
   }
 
   public mapTableToServer(event: EventTableType): EventServerType {
@@ -102,7 +117,7 @@ class EventTableClass extends BaseTable<
     super("event", new EventServerTypeClass(), "event", true);
   }
 
-  MainCallerTableComponent = () => {
+  MainEventTableComponent = () => {
     const MainTableComponent = this.MainTableComponent;
 
     return <MainTableComponent />;
@@ -131,6 +146,7 @@ class EventTableClass extends BaseTable<
       {
         accessorKey: "date",
         header: "Date",
+        filterVariant: "date-range",
         enableEditing: false,
         Cell: ({ cell }) => (
           <span>{(cell.getValue() as Date).toISOString().split("T")[0]}</span>
@@ -163,6 +179,98 @@ class EventTableClass extends BaseTable<
         header: "Caller charge",
       },
     ];
+  }
+
+  private PopulateDialog(props: {
+    open: boolean;
+    close: () => void;
+    saveDates: (startDate: Date, endDate: Date) => void;
+  }) {
+    const [startDate, setStartDate] = useState(new Date());
+    const [endDate, setEndDate] = useState(new Date());
+
+    return (
+      <Dialog open={props.open} onClose={props.close}>
+        <Box sx={{ padding: 2 }}>
+          <h3>
+            Populate events with active classes for the specified date range.
+          </h3>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <DatePicker
+              label="Start date"
+              value={dayjs(startDate)}
+              onChange={(newValue) => {
+                const newDate = newValue?.toDate() ?? new Date();
+
+                setStartDate(newDate);
+              }}
+            />
+            <DatePicker
+              sx={{ marginLeft: 2 }}
+              label="End date"
+              value={dayjs(endDate)}
+              onChange={(newValue) => {
+                const newDate = newValue?.toDate() ?? new Date();
+
+                setEndDate(newDate);
+              }}
+            />
+          </LocalizationProvider>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 1,
+              marginTop: 2,
+            }}
+          >
+            <Button onClick={props.close} variant="outlined">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                props.saveDates(startDate, endDate);
+                props.close();
+              }}
+              variant="contained"
+              color="primary"
+            >
+              Save
+            </Button>
+          </Box>
+        </Box>
+      </Dialog>
+    );
+  }
+
+  public getLeftToolBarActions(
+    table: MRT_TableInstance<EventTableType>,
+  ): React.FC | null {
+    return () => {
+      const { mutateAsync: refreshRows } = this.useCustomAction();
+      const [open, setOpen] = useState(false);
+      const saveDates = async (startDate: Date, endDate: Date) => {
+        await this.server.populateEvent(startDate, endDate);
+        await refreshRows();
+      };
+
+      return (
+        <>
+          <Button
+            variant="contained"
+            sx={{ marginLeft: 3 }}
+            onClick={() => setOpen(true)}
+          >
+            Populate
+          </Button>
+          <this.PopulateDialog
+            open={open}
+            close={() => setOpen(false)}
+            saveDates={saveDates}
+          />
+        </>
+      );
+    };
   }
 
   public getCustomEditDialog(
@@ -331,7 +439,13 @@ class EventTableClass extends BaseTable<
                   const classInfo = await new ClassInfoServerTypeClass().getRow(
                     clazz?.classInfoId!,
                   );
-                  //const callerCharge = classInfo?.caller.
+                  const callerCharge = (
+                    ((classInfo?.hourlyRate ?? 0) *
+                      parseFloat(classInfo?.hours ?? "0")) /
+                    100
+                  ).toFixed(2);
+                  const roomCharge = ((classInfo?.rent ?? 0) / 100).toFixed(2);
+
                   setValues({
                     ...values!,
                     classId,
@@ -340,6 +454,9 @@ class EventTableClass extends BaseTable<
                     callerName: classInfo?.callerName!,
                     locationId: classInfo?.locationId!,
                     locationName: classInfo?.locationName!,
+                    callerCharge,
+                    roomCharge,
+                    hours: classInfo?.hours!,
                   });
                 }}
                 renderValue={(classId) => {
@@ -399,12 +516,15 @@ class EventTableClass extends BaseTable<
                   const caller = allCallers.find(
                     (caller) => caller.id === callerId,
                   );
+                  const hours = parseFloat(values?.hours ?? "0");
+                  const callerRate = parseFloat(caller?.hourlyRate ?? "0");
+                  const callerCharge = (hours * callerRate).toFixed(2);
 
                   setValues({
                     ...values!,
                     callerId,
                     callerName: `${caller?.firstName} ${caller?.lastName}`,
-                    callerCharge: caller?.hourlyRate ?? "0.00",
+                    callerCharge,
                   });
                 }}
                 renderValue={(callerId) => {

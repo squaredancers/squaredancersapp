@@ -13,7 +13,8 @@ export interface ClassInfoServerType {
   name: string;
   day: DaysType;
   hours: number;
-  location: { id: number; name: string } | number;
+  googleFormsName: string;
+  location: { id: number; name: string; rent: number } | number;
   caller:
     | {
         id: number;
@@ -27,10 +28,12 @@ export interface ClassInfoTableType {
   id: number;
   name: string;
   day: DaysType;
+  googleFormsName: string;
   hours: string;
   callerId: number;
   callerName: string;
   locationId: number;
   locationName: string;
   hourlyRate?: number;
+  rent?: number;
 }

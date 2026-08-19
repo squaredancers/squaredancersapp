@@ -1,6 +1,15 @@
 import axios, { AxiosRequestConfig, Method } from "axios";
 import useUserStore from "../stores/useUserStore.js";
 
+export interface CallerWithHours {
+  id: number;
+  hourlyRate: number;
+  user: {
+    firstName: string;
+    lastName: string;
+  };
+  hours: number;
+}
 class Server {
   private static getConfig(
     method: Method,
@@ -73,6 +82,63 @@ class Server {
     } catch (exc) {}
 
     return result;
+  }
+
+  static async getCallerHours(
+    startDate: Date,
+    endDate: Date,
+  ): Promise<CallerWithHours[]> {
+    let result: CallerWithHours[] = [];
+    const data = { startDate, endDate };
+    const requestConfig = this.getConfig(
+      "POST",
+      "/api/report/callers",
+      JSON.stringify(data),
+      true,
+    );
+
+    try {
+      const response: { data: { callerHours: CallerWithHours[] } } =
+        await axios(requestConfig);
+
+      result = response?.data.callerHours ?? [];
+    } catch (exc) {}
+
+    return result;
+  }
+
+  static async getSettings(): Promise<{ [key: string]: string }> {
+    let result: { [key: string]: string } = {};
+    const requestConfig = this.getConfig("GET", "/api/settings", "", true);
+
+    try {
+      const response: { data: { name: string; value: string }[] } =
+        await axios(requestConfig);
+
+      response.data.forEach((entry) => {
+        result[entry.name] = entry.value;
+      });
+    } catch (exc) {}
+
+    return result;
+  }
+
+  static async updateSetting(
+    settingKey: string,
+    value: string,
+    isCreate: boolean,
+  ): Promise<void> {
+    const data = { name: settingKey, value };
+    const requestConfig = this.getConfig(
+      isCreate ? "POST" : "PATCH",
+      "/api/settings",
+      JSON.stringify(data),
+      true,
+    );
+
+    try {
+      await axios(requestConfig);
+    } catch (exc) {}
   }
 }
 

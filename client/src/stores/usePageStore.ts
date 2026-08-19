@@ -8,6 +8,8 @@ export enum Pages {
   ClassInfo = "ClassInfo",
   Classes = "Classes",
   Callers = "Callers",
+  Registrants = "Registrants",
+  Reports = "Reports",
 }
 
 interface PageInfo {

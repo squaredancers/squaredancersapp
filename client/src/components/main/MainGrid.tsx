@@ -1,6 +1,8 @@
 import styled from "@emotion/styled";
 import Box from "@mui/material/Box";
+import { useEffect } from "react";
 import usePageStore, { Pages } from "../../stores/usePageStore.js";
+import useSettingsStore from "../../stores/useSettingsStore.js";
 import Conditional from "../common/Conditional.js";
 import CallerTable from "./pages/caller/CallerTable.js";
 import ClassesTable from "./pages/classes/ClassesTable.js";
@@ -8,6 +10,8 @@ import ClassInfoTable from "./pages/classinfo/ClassinfoTable.js";
 import EventTable from "./pages/event/EventTable.js";
 import { HomePage } from "./pages/home.js";
 import LocationTable from "./pages/location/LocationTable.js";
+import RegistrantTable from "./pages/registrants/registrantsTable.js";
+import { ReportTabs } from "./pages/reports/ReportTabs.js";
 import UserTable from "./pages/user/UsersTable.js";
 
 const CenteredText = styled.div`
@@ -33,9 +37,15 @@ const MainGrid = () => {
   const UserPage = UserTable.MainUserTableComponent;
   const CallerPage = CallerTable.MainCallerTableComponent;
   const LocationPage = LocationTable.MainLocationTableComponent;
-  const ClassInfoPage = ClassInfoTable.MainCallerTableComponent;
-  const ClassesPage = ClassesTable.MainCallerTableComponent;
-  const EventPage = EventTable.MainCallerTableComponent;
+  const ClassInfoPage = ClassInfoTable.MainClassInfoTableComponent;
+  const ClassesPage = ClassesTable.MainClassTableComponent;
+  const EventPage = EventTable.MainEventTableComponent;
+  const RegistrantPage = RegistrantTable.MainRegistrantTableComponent;
+
+  useEffect(() => {
+    // Load settings
+    useSettingsStore.getState().loadSettings();
+  }, []);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -68,6 +78,14 @@ const MainGrid = () => {
 
       <Conditional condition={page === Pages.Events}>
         <EventPage />
+      </Conditional>
+
+      <Conditional condition={page === Pages.Registrants}>
+        <RegistrantPage />
+      </Conditional>
+
+      <Conditional condition={page === Pages.Reports}>
+        <ReportTabs />
       </Conditional>
     </Box>
   );

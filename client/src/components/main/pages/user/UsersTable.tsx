@@ -1,19 +1,23 @@
 import {
   Box,
+  Button,
   Checkbox,
   Chip,
+  Dialog,
   FormControl,
   InputLabel,
   ListItemText,
   MenuItem,
   OutlinedInput,
   Select,
+  TextField,
 } from "@mui/material";
 import {
+  MRT_TableInstance,
   // createRow,
   type MRT_ColumnDef,
 } from "material-react-table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useRolesStore from "../../../../stores/useRolesStore.js";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import BaseServer from "../common/baseServer.js";
@@ -67,7 +71,7 @@ class UserTableClass extends BaseTable<
   UserServerTypeClass
 > {
   public constructor() {
-    super("user", new UserServerTypeClass(), "user");
+    super("user", new UserServerTypeClass(), "user", true);
   }
 
   MainUserTableComponent = () => {
@@ -97,75 +101,23 @@ class UserTableClass extends BaseTable<
     const validationErrors = useValidationStore.getState().validationErrors;
     const setValidationErrors =
       useValidationStore.getState().setValidationErrors;
-    const availableRoles = useRolesStore.getState().availableRoles;
 
     return [
       {
         accessorKey: "firstName",
         header: "First Name",
-        muiEditTextFieldProps: {
-          required: true,
-          variant: "outlined",
-          error: !!validationErrors?.firstName,
-          helperText: validationErrors?.firstName,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              firstName: undefined,
-            }),
-          //optionally add validation checking for onBlur or onChange
-        },
       },
       {
         accessorKey: "lastName",
         header: "Last Name",
-        muiEditTextFieldProps: {
-          required: true,
-          variant: "outlined",
-          error: !!validationErrors?.lastName,
-          helperText: validationErrors?.lastName,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              lastName: undefined,
-            }),
-        },
       },
       {
         accessorKey: "email",
         header: "Email",
-        muiEditTextFieldProps: {
-          type: "email",
-          variant: "outlined",
-          required: true,
-          error: !!validationErrors?.email,
-          helperText: validationErrors?.email,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              email: undefined,
-            }),
-        },
       },
       {
         accessorKey: "phone",
         header: "Phone",
-        muiEditTextFieldProps: {
-          type: "text",
-          required: false,
-          variant: "outlined",
-          error: !!validationErrors?.phone,
-          helperText: validationErrors?.phone,
-          //remove any previous validation errors when user focuses on the input
-          onFocus: () =>
-            setValidationErrors({
-              ...validationErrors,
-              phone: undefined,
-            }),
-        },
       },
       {
         accessorKey: "roles",
@@ -174,28 +126,179 @@ class UserTableClass extends BaseTable<
         Cell: ({ cell }) => (
           <span>{(cell.getValue() as string[]).join(", ")}</span>
         ),
-        // Custom component for editing
-        Edit: ({ cell, row, table }) => {
-          //const { onBlur, onChange, value } = cell; // 'value' will be an array
-          const [roles, setRoles] = useState<string[]>(
-            cell.getValue() as string[],
-          );
+      },
+    ];
+  }
 
-          const rowId: number = row.getValue("id");
+  public getCustomEditDialog(
+    table: MRT_TableInstance<UserTableType>,
+  ): React.FC | null {
+    const CustomEditForm = () => {
+      const { editingRow, creatingRow } = table.getState();
+      const isCreateOrEdit = editingRow !== null || creatingRow !== null;
+      const prevValues = editingRow
+        ? editingRow.original
+        : creatingRow
+          ? creatingRow.original
+          : null;
+      const [values, setInternalValues] = useState<UserTableType | null>(null);
+      const availableRoles = useRolesStore.getState().availableRoles;
+      const validationErrors = useValidationStore(
+        (state) => state.validationErrors,
+      );
+      const setValidationErrors = useValidationStore(
+        (state) => state.setValidationErrors,
+      );
+      const { mutateAsync: updateRowType } = this.useUpdateRowType();
+      const { mutateAsync: createRowType } = this.useCreateRowType();
 
-          return (
-            <FormControl fullWidth required={false}>
+      const setValues = (values: UserTableType | null) => {
+        console.log("Setting values", { ...values });
+        setInternalValues(values);
+      };
+
+      useEffect(() => {
+        const getInfo = async () => {
+          if (editingRow !== null) {
+            // Initialize form values when an editing row is set
+            setValues(prevValues);
+          } else {
+            setValues({
+              id: 0,
+              firstName: "",
+              lastName: "",
+              phone: "",
+              email: "",
+              password: "",
+              roles: [],
+            });
+          }
+        };
+
+        getInfo();
+      }, [editingRow, creatingRow]);
+
+      const handleChange = (event: any) => {
+        setValues({
+          ...values!,
+          [event.target.name]: event.target.value,
+        });
+      };
+
+      const handleSave = async () => {
+        const newValidationErrors = this.validateRow(values!);
+
+        if (Object.values(newValidationErrors).some((error) => error)) {
+          setValidationErrors(newValidationErrors);
+          return;
+        }
+
+        setValidationErrors({});
+        if (editingRow !== null) {
+          await updateRowType(values!);
+          table.setEditingRow(null);
+        } else {
+          await createRowType(values!);
+          table.setCreatingRow(null);
+        }
+      };
+
+      const handleCancel = () => {
+        // 1. Clear any local validation errors
+        // 2. Exit editing mode
+        table.setCreatingRow(null);
+        table.setEditingRow(null);
+      };
+
+      if (!isCreateOrEdit) return null; // Don't render if no row is being edited
+
+      return (
+        <Dialog open={isCreateOrEdit} onClose={handleCancel}>
+          <Box sx={{ padding: 2 }}>
+            <h3>
+              {`${creatingRow !== null ? "Create" : "Edit"} ${this.rowName} row`}
+            </h3>
+
+            <TextField
+              label="First name"
+              name="firstName"
+              required={true}
+              value={values?.firstName ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.firstName}
+              helperText={validationErrors?.firstName}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  firstName: undefined,
+                })
+              }
+            />
+            <TextField
+              label="Last name"
+              name="lastName"
+              required={true}
+              value={values?.lastName ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.lastName}
+              helperText={validationErrors?.lastName}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  lastName: undefined,
+                })
+              }
+            />
+            <TextField
+              label="Email"
+              name="email"
+              required={true}
+              value={values?.email ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.email}
+              helperText={validationErrors?.email}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  email: undefined,
+                })
+              }
+            />
+            <TextField
+              label="Phone"
+              name="phone"
+              required={true}
+              value={values?.phone ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.phone}
+              helperText={validationErrors?.phone}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  phone: undefined,
+                })
+              }
+            />
+            <FormControl fullWidth required={false} sx={{ marginTop: 2 }}>
               <InputLabel id="roles-label">{"Roles"}</InputLabel>
 
               <Select
                 multiple={true}
-                value={roles || []} // Default to empty array if value is null/undefined
+                value={values?.roles || []} // Default to empty array if value is null/undefined
                 onChange={(event) => {
                   const newRoles = event.target.value as string[];
                   console.log("New value=", newRoles);
                   // MUI Select with multiple={true} returns an array of values directly
-                  setRoles(newRoles);
-                  row._valuesCache["roles"] = newRoles;
+                  setValues({ ...values!, roles: newRoles });
+
                   //handleRolesUpdate(newValue, rowId);
                   //onChange(newValue);
                 }}
@@ -210,16 +313,32 @@ class UserTableClass extends BaseTable<
               >
                 {availableRoles.map((role) => (
                   <MenuItem key={role} value={role}>
-                    <Checkbox checked={roles.includes(role)} />
+                    <Checkbox checked={values?.roles.includes(role)} />
                     <ListItemText primary={role} />
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
-          );
-        },
-      },
-    ];
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 1,
+                marginTop: 2,
+              }}
+            >
+              <Button onClick={handleCancel} variant="outlined">
+                Cancel
+              </Button>
+              <Button onClick={handleSave} variant="contained" color="primary">
+                Save
+              </Button>
+            </Box>
+          </Box>
+        </Dialog>
+      );
+    };
+    return () => <CustomEditForm />;
   }
 }
 

@@ -3,11 +3,17 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Stack from "@mui/material/Stack";
 import { alpha } from "@mui/material/styles";
 import type {} from "@mui/x-date-pickers/themeAugmentation";
+import useCsvDialogStore from "../../stores/useCvsDialogStore.js";
+import FormColumnMapDialog from "../dialogs/FormColumnMapDialog.js";
 import Header from "./Header.js";
 import MainGrid from "./MainGrid.js";
 import SideMenu from "./SideMenu.js";
+import ImportFileDialog from "./pages/common/ImportFileDialog.js";
 
 export default function Dashboard(props: {}) {
+  const csvOpenDialog = useCsvDialogStore((state) => state.open);
+  const setCsvOpenDialog = useCsvDialogStore((state) => state.setOpen);
+
   return (
     <>
       <CssBaseline enableColorScheme />
@@ -35,6 +41,14 @@ export default function Dashboard(props: {}) {
             }}
           >
             <Header />
+            <ImportFileDialog
+              open={csvOpenDialog}
+              onClose={(value) => {
+                setCsvOpenDialog(false);
+                useCsvDialogStore.getState().setFileContent(value);
+              }}
+            />
+            <FormColumnMapDialog />
             <MainGrid />
           </Stack>
         </Box>
