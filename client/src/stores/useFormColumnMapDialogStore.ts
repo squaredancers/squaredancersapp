@@ -7,8 +7,6 @@ export const fields = [
   "Lastname",
   "Email",
   "Phone",
-  "PaySession",
-  "PayPerClass",
   "Timestamp",
   "PaymentType",
   "RegistrationType",
@@ -42,7 +40,6 @@ const useFormColumnMapDialogStore = create<DialogStore>((set, get) => ({
     const columnMappingsString =
       useSettingsStore.getState().settings[MAPPING_SETTINGS];
 
-    console.log("Colum mappings=", columnMappingsString);
     const columnMappings = JSON.parse(columnMappingsString) as FieldType[];
 
     set({ isOpen: true, fields: columnMappings });

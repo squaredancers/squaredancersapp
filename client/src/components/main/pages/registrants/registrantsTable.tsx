@@ -39,11 +39,17 @@ import {
   RegistrantTableType,
 } from "./registrantsTypes.js";
 
-const CustomImportButton = () => {
+const CustomImportButton = (props: { refreshTable: () => Promise<void> }) => {
   const setOpen = useCsvDialogStore((state) => state.setOpen);
+  const setCallAfterSave = useCsvDialogStore((state) => state.setCallAfterSave);
 
   return (
-    <IconButton onClick={() => setOpen(true)}>
+    <IconButton
+      onClick={() => {
+        setCallAfterSave(props.refreshTable);
+        setOpen(true);
+      }}
+    >
       <ImportExportIcon />
     </IconButton>
   );
@@ -77,9 +83,11 @@ class RegistrantTableClass extends BaseTable<
     table: MRT_TableInstance<RegistrantTableType>,
   ): React.FC | null {
     return () => {
+      const { mutateAsync: refreshRows } = this.useCustomAction();
+
       return (
         <>
-          <CustomImportButton />
+          <CustomImportButton refreshTable={refreshRows} />
           <CustomGearButton />
         </>
       );
@@ -116,6 +124,7 @@ class RegistrantTableClass extends BaseTable<
       classActive: true,
       classId: 0,
       dateRegistered: new Date(),
+      howWillPaymentBeMade: "etransfer",
     };
   };
 
@@ -141,6 +150,20 @@ class RegistrantTableClass extends BaseTable<
         Cell: ({ cell }) => {
           const value = cell.getValue<"session" | "perClass">();
           const text = { session: "Session", perClass: "Pay per class" };
+
+          return <Chip label={text[value]} size="small" />;
+        },
+      },
+      {
+        accessorKey: "howWillPaymentBeMade",
+        header: "Payment kind",
+        Cell: ({ cell }) => {
+          const value = cell.getValue<"cash" | "creditcard" | "etransfer">();
+          const text = {
+            cash: "Cash",
+            creditcard: "Credit card",
+            etransfer: "E-transfer",
+          };
 
           return <Chip label={text[value]} size="small" />;
         },
@@ -371,6 +394,40 @@ class RegistrantTableClass extends BaseTable<
               <Conditional condition={!!validationErrors?.paymentType}>
                 <FormHelperText error>
                   {validationErrors?.paymentType}
+                </FormHelperText>
+              </Conditional>
+            </FormControl>
+
+            <FormControl fullWidth required={true} sx={{ marginTop: 2 }}>
+              <InputLabel id="classes-label">Payment kind</InputLabel>
+              <Select
+                multiple={false}
+                value={values?.howWillPaymentBeMade}
+                labelId="payment-kind-label"
+                error={!!validationErrors?.howWillPaymentBeMade}
+                input={<OutlinedInput label="Payment kind" />} // This prop handles the outlined input style and notches the border correctly
+                onChange={(event) => {
+                  const howWillPaymentBeMade = event.target.value;
+
+                  setValues({
+                    ...values!,
+                    howWillPaymentBeMade,
+                  });
+                }}
+              >
+                <MenuItem key="etransfer-payment" value="etransfer">
+                  <ListItemText primary="E-Transfer" />
+                </MenuItem>
+                <MenuItem key="cash-payment" value="cash">
+                  <ListItemText primary="Cash or Cheque" />
+                </MenuItem>
+                <MenuItem key="creditcard-payment" value="creditcard">
+                  <ListItemText primary="Credit card" />
+                </MenuItem>
+              </Select>
+              <Conditional condition={!!validationErrors?.howWillPaymentBeMade}>
+                <FormHelperText error>
+                  {validationErrors?.howWillPaymentBeMade}
                 </FormHelperText>
               </Conditional>
             </FormControl>

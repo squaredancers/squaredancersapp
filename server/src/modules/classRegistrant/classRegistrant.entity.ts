@@ -11,8 +11,13 @@ export class ClassRegistrant extends BaseEntity {
   @ManyToOne(() => User)
   user!: User;
 
+  // pay per session or pay per class
   @Property()
   paymentType!: string;
+
+  // Cash, etransfer, or creditcard
+  @Property({ default: "" })
+  howWillPaymentBeMade!: string;
 
   @Property({ default: false })
   paidSession: boolean = false;

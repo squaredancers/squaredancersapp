@@ -198,6 +198,7 @@ export abstract class BaseTable<
       enableRowActions: true,
       initialState: {
         columnVisibility: this.getColumnVisibility(),
+        density: "compact",
       },
       muiEditRowDialogProps: ({ table, row }) => ({
         open: !!table.getState().editingRow, // Ensure this is present

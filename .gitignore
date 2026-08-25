@@ -8,3 +8,5 @@ server/src/sendEmail.js
 server/package-lock.json
 server/server.cert
 server/server.key
+server/test.csv
+server/test.json
