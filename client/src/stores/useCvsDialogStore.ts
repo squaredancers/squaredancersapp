@@ -3,6 +3,9 @@ import { RegistrantServerTypeClass } from "../components/main/pages/registrants/
 
 interface DialogStore {
   open: boolean;
+  callAfterSave: () => Promise<void>;
+
+  setCallAfterSave: (callAfterSave: () => Promise<void>) => void;
 
   setOpen: (open: boolean) => void;
   setFileContent: (content: string) => Promise<void>;
@@ -10,6 +13,11 @@ interface DialogStore {
 
 const useCsvDialogStore = create<DialogStore>((set, get) => ({
   open: false,
+  callAfterSave: async () => {},
+
+  setCallAfterSave: (callAfterSave: () => Promise<void>) => {
+    set({ callAfterSave });
+  },
 
   setOpen: (open: boolean) => {
     set({ open });
@@ -20,6 +28,8 @@ const useCsvDialogStore = create<DialogStore>((set, get) => ({
     const registrantServer = new RegistrantServerTypeClass();
     const bulkResponse =
       await registrantServer.bulkAddRegistrants(splitContent);
+
+    await get().callAfterSave();
 
     console.log("Bulk add response=", bulkResponse);
   },

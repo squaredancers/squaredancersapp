@@ -5,6 +5,7 @@ export interface RegistrantServerType {
   paymentType: "session" | "perClass";
   paidSession: boolean;
   dateRegistered: Date;
+  howWillPaymentBeMade: "cash" | "etransfer" | "creditcard";
 }
 
 export interface RegistrantTableType {
@@ -17,4 +18,5 @@ export interface RegistrantTableType {
   classActive: boolean;
   classId: number;
   dateRegistered: Date;
+  howWillPaymentBeMade: "cash" | "etransfer" | "creditcard";
 }

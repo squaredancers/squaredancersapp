@@ -23,6 +23,7 @@ export class RegistrantServerTypeClass extends BaseServer<
       paidSession: registrant.paidSession,
       paymentType: registrant.paymentType,
       dateRegistered: registrant.dateRegistered,
+      howWillPaymentBeMade: registrant.howWillPaymentBeMade,
     };
   }
 
@@ -47,6 +48,7 @@ export class RegistrantServerTypeClass extends BaseServer<
       userId: user.id,
       dateRegistered: registrant.dateRegistered,
       paymentType: registrant.paymentType,
+      howWillPaymentBeMade: registrant.howWillPaymentBeMade,
       paidSession: registrant.paidSession,
       className: clazz.name,
       classActive: clazz.active,
