@@ -22,6 +22,9 @@ export class ClassRegistrant extends BaseEntity {
   @Property({ default: false })
   paidSession: boolean = false;
 
+  @Property({ default: false })
+  confirmationSent: boolean = false;
+
   @Property({ defaultRaw: "'2026-01-01 00:00:00'" })
   dateRegistered: Date & Opt = new Date();
 }

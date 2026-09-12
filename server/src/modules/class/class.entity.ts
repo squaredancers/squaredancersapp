@@ -26,6 +26,9 @@ export class Class extends BaseEntity {
   @Property({ default: "" })
   mailChimpName!: string;
 
+  @Property({ default: "" })
+  mailChimpClassType!: string;
+
   // Note: this is a class list of students.
   @OneToMany({ mappedBy: "class" })
   registrants = new Collection<ClassRegistrant>(this);

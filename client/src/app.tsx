@@ -1,16 +1,17 @@
+import { useEffect } from "react";
+import Conditional from "./components/common/Conditional.js";
 import Dashboard from "./components/main/Dashboard.js";
 import SignIn from "./components/signin/SignIn.js";
-import Conditional from "./components/common/Conditional.js";
-import useUserStore from "./stores/useUserStore.js";
-import { useEffect } from "react";
+import useFlagStore from "./stores/useFlagStore.js";
 import useRolesStore from "./stores/useRolesStore.js";
+import useUserStore from "./stores/useUserStore.js";
 
 export const App = () => {
-  let token = useUserStore((state) => state.token);
-
-  token = "sometoken";
+  const setFlags = useFlagStore((state) => state.setFlags);
+  const token = useUserStore((state) => state.token);
 
   useEffect(() => {
+    setFlags();
     useRolesStore.getState().loadRoles();
   }, []);
 

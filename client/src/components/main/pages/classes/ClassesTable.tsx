@@ -39,8 +39,16 @@ export class ClassesServerTypeClass extends BaseServer<
   }
 
   public mapTableToServer(classes: ClassesTableType): ClassesServerType {
-    const { id, name, classInfoId, active, googleFormsName, mailChimpName } =
-      classes;
+    const {
+      id,
+      name,
+      classInfoId,
+      active,
+      googleFormsName,
+      mailChimpName,
+      mailChimpClassType,
+      registrants,
+    } = classes;
 
     return {
       id,
@@ -49,6 +57,8 @@ export class ClassesServerTypeClass extends BaseServer<
       active,
       googleFormsName,
       mailChimpName,
+      mailChimpClassType,
+      registrants,
     };
   }
 
@@ -64,13 +74,15 @@ export class ClassesServerTypeClass extends BaseServer<
       active: classes.active,
       googleFormsName: classes.googleFormsName,
       mailChimpName: classes.mailChimpName,
+      mailChimpClassType: classes.mailChimpClassType,
       classInfoId: classInfo.id,
       classInfoName: classInfo.name,
+      registrants: classes.registrants,
     };
   }
 }
 
-class ClassesTableClass extends BaseTable<
+export class ClassesTableClass extends BaseTable<
   ClassesTableType,
   ClassesServerType,
   ClassesServerTypeClass
@@ -128,6 +140,11 @@ class ClassesTableClass extends BaseTable<
       {
         accessorKey: "mailChimpName",
         header: "MailChimp name",
+        enableEditing: false,
+      },
+      {
+        accessorKey: "mailChimpClassType",
+        header: "MailChimp class type",
         enableEditing: false,
       },
     ];
@@ -188,6 +205,8 @@ class ClassesTableClass extends BaseTable<
               active: true,
               googleFormsName: "",
               mailChimpName: "",
+              mailChimpClassType: "",
+              registrants: [],
             });
           }
         };
@@ -290,6 +309,8 @@ class ClassesTableClass extends BaseTable<
                     ...values!,
                     classInfoId,
                     classInfoName: classInfo?.name ?? "",
+                    googleFormsName: classInfo?.googleFormsName ?? "",
+                    mailChimpClassType: classInfo?.mailChimpClassType ?? "",
                   });
                 }}
                 renderValue={(classInfoId) => {
@@ -369,6 +390,23 @@ class ClassesTableClass extends BaseTable<
                 setValidationErrors({
                   ...validationErrors,
                   mailChimpName: undefined,
+                })
+              }
+            />
+            <TextField
+              label="MailChimp class type"
+              name="mailChimpClassType"
+              required={false}
+              value={values?.mailChimpClassType ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.mailChimpClassType}
+              helperText={validationErrors?.mailChimpClassType}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  mailChimpClassType: undefined,
                 })
               }
             />

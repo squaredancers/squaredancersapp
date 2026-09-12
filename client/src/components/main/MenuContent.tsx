@@ -1,5 +1,6 @@
 import CampaignIcon from "@mui/icons-material/CampaignRounded";
 import CelebrationIcon from "@mui/icons-material/CelebrationRounded";
+import ChecklistRtlIcon from "@mui/icons-material/ChecklistRtl";
 import RegistrantIcon from "@mui/icons-material/Groups";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
@@ -24,6 +25,7 @@ const mainListItems = [
   { text: Pages.ClassInfo, icon: <SchoolIcon /> },
   { text: Pages.Classes, icon: <SchoolIcon /> },
   { text: Pages.Registrants, icon: <RegistrantIcon /> },
+  { text: Pages.ClassLists, icon: <ChecklistRtlIcon /> },
   { text: Pages.Reports, icon: <SummarizeIcon /> },
 ];
 

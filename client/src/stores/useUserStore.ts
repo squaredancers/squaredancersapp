@@ -12,10 +12,12 @@ interface UserInfo {
     lastname: string,
     email: string,
     token: string,
-    roles: string[]
+    roles: string[],
   ) => void;
 
   logout: () => void;
+
+  setToken: (token: string) => void;
 }
 
 const useUserStore = create<UserInfo>((set, get) => ({
@@ -30,9 +32,13 @@ const useUserStore = create<UserInfo>((set, get) => ({
     lastname: string,
     email: string,
     token: string,
-    roles: string[]
+    roles: string[],
   ) => {
     set({ firstname, lastname, email, token, roles });
+  },
+
+  setToken: (token: string) => {
+    set({ token });
   },
 
   logout: () => {

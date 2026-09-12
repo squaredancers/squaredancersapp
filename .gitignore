@@ -10,3 +10,4 @@ server/server.cert
 server/server.key
 server/test.csv
 server/test.json
+googleResponses/*

@@ -41,7 +41,15 @@ export class ClassInfoServerTypeClass extends BaseServer<
   }
 
   public mapTableToServer(classInfo: ClassInfoTableType): ClassInfoServerType {
-    const { id, name, day, locationId, callerId, googleFormsName } = classInfo;
+    const {
+      id,
+      name,
+      day,
+      locationId,
+      callerId,
+      googleFormsName,
+      mailChimpClassType,
+    } = classInfo;
     const hours = Math.trunc(parseFloat(classInfo.hours) * 100);
 
     return {
@@ -50,6 +58,7 @@ export class ClassInfoServerTypeClass extends BaseServer<
       day,
       hours,
       googleFormsName,
+      mailChimpClassType,
       location: locationId,
       caller: callerId,
     };
@@ -71,7 +80,7 @@ export class ClassInfoServerTypeClass extends BaseServer<
       rent?: number;
     };
     const hours = (classInfo.hours / 100).toFixed(2);
-    const { id, name, day, googleFormsName } = classInfo;
+    const { id, name, day, googleFormsName, mailChimpClassType } = classInfo;
 
     return {
       id,
@@ -79,6 +88,7 @@ export class ClassInfoServerTypeClass extends BaseServer<
       day,
       hours,
       googleFormsName,
+      mailChimpClassType,
       callerName: `${caller.user.firstName} ${caller.user.lastName}`,
       locationName,
       callerId: caller.id,
@@ -137,6 +147,7 @@ class ClassInfoTableClass extends BaseTable<
       locationId: 0,
       locationName: "",
       googleFormsName: "",
+      mailChimpClassType: "",
     };
   };
 
@@ -166,6 +177,7 @@ class ClassInfoTableClass extends BaseTable<
         header: "Location name",
       },
       { accessorKey: "googleFormsName", header: "Google forms name" },
+      { accessorKey: "mailChimpClassType", header: "Mailchimp class type" },
     ];
   }
 
@@ -414,6 +426,23 @@ class ClassInfoTableClass extends BaseTable<
                 setValidationErrors({
                   ...validationErrors,
                   googleFormsName: undefined,
+                })
+              }
+            />
+            <TextField
+              label="Mailchimp class type"
+              name="mailChimpClassType"
+              required={true}
+              value={values?.mailChimpClassType ?? ""}
+              onChange={handleChange}
+              error={!!validationErrors?.mailChimpClassType}
+              helperText={validationErrors?.mailChimpClassType}
+              fullWidth
+              margin="normal"
+              onFocus={() =>
+                setValidationErrors({
+                  ...validationErrors,
+                  mailChimpClassType: undefined,
                 })
               }
             />

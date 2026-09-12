@@ -7,6 +7,7 @@ import Conditional from "../common/Conditional.js";
 import CallerTable from "./pages/caller/CallerTable.js";
 import ClassesTable from "./pages/classes/ClassesTable.js";
 import ClassInfoTable from "./pages/classinfo/ClassinfoTable.js";
+import ClassListsTable from "./pages/classLists/ClassListsTable.js";
 import EventTable from "./pages/event/EventTable.js";
 import { HomePage } from "./pages/home.js";
 import LocationTable from "./pages/location/LocationTable.js";
@@ -41,6 +42,7 @@ const MainGrid = () => {
   const ClassesPage = ClassesTable.MainClassTableComponent;
   const EventPage = EventTable.MainEventTableComponent;
   const RegistrantPage = RegistrantTable.MainRegistrantTableComponent;
+  const ClassListsPage = ClassListsTable.MainClassListsTableComponent;
 
   useEffect(() => {
     // Load settings
@@ -82,6 +84,10 @@ const MainGrid = () => {
 
       <Conditional condition={page === Pages.Registrants}>
         <RegistrantPage />
+      </Conditional>
+
+      <Conditional condition={page === Pages.ClassLists}>
+        <ClassListsPage />
       </Conditional>
 
       <Conditional condition={page === Pages.Reports}>
