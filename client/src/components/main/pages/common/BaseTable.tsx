@@ -37,11 +37,11 @@ import {
   type MRT_TableOptions,
 } from "material-react-table";
 import { useCallback, useMemo, useState } from "react";
+import usePDFTitleDialogStore from "../../../../stores/usePDFTitleDialogStore.js";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import StringUtils from "../../../../utils/stringUtils.js";
 import ConfirmationDialog from "../../../common/ConfirmationDialog.js";
 import BaseServer from "./baseServer.js";
-import { exportToPdf } from "./pdfUtils.js";
 import IDField from "./types.js";
 
 const queryClient = new QueryClient();
@@ -101,6 +101,10 @@ export abstract class BaseTable<
     return null;
   }
 
+  public getCustomRowActions(row: MRT_Row<RowTableType>): React.FC | null {
+    return null;
+  }
+
   public getCustomEditDialog(
     table: MRT_TableInstance<RowTableType>,
   ): React.FC | null {
@@ -128,9 +132,7 @@ export abstract class BaseTable<
 
     // Setting the row to a non null value will open a delete confirmation dialog
     const [rowToDelete, setRowToDelete] = useState<RowTableType | null>(null);
-    const columns = useMemo<MRT_ColumnDef<RowTableType>[]>(() => {
-      return this.getColumns();
-    }, [validationErrors]);
+    const columns = this.getColumns();
 
     //call CREATE hook
     const { mutateAsync: createRowType, isPending: isCreatingRowType } =
@@ -195,6 +197,7 @@ export abstract class BaseTable<
       createDisplayMode: this.isUseCustomEditDialog ? "custom" : "modal", //default ('row', and 'custom' are also available)
       editDisplayMode: this.isUseCustomEditDialog ? "custom" : "modal", //default ('row', 'cell', 'table', and 'custom' are also available)
       enableEditing: true,
+      enableHiding: false,
       enableRowActions: true,
       initialState: {
         columnVisibility: this.getColumnVisibility(),
@@ -265,23 +268,29 @@ export abstract class BaseTable<
         </>
       ),
 
-      renderRowActions: ({ row, table }) => (
-        <Box sx={{ display: "flex", gap: "1rem" }}>
-          <Tooltip title="Edit">
-            <IconButton onClick={() => table.setEditingRow(row)}>
-              <EditIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Delete">
-            <IconButton
-              color="error"
-              onClick={() => openDeleteConfirmModal(row)}
-            >
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      ),
+      renderRowActions: ({ row, table }) => {
+        const CustomActions = useMemo(() => {
+          return this.getCustomRowActions(row);
+        }, [table]);
+        return (
+          <Box sx={{ display: "flex", gap: "1rem" }}>
+            <Tooltip title="Edit">
+              <IconButton onClick={() => table.setEditingRow(row)}>
+                <EditIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton
+                color="error"
+                onClick={() => openDeleteConfirmModal(row)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Tooltip>
+            {CustomActions ? <CustomActions /> : null}
+          </Box>
+        );
+      },
 
       renderTopToolbarCustomActions: ({ table }) => {
         const CustomActions = useMemo(() => {
@@ -320,29 +329,35 @@ export abstract class BaseTable<
             <MRT_ToggleGlobalFilterButton table={table} />
             {CustomToolBarActions ? <CustomToolBarActions /> : null}
             {/* Built-in buttons (must pass in the table prop) */}
-            <IconButton
-              onClick={() => {
-                const rows = table.getFilteredRowModel().rows.map((row) => {
-                  return columns.map((col) => {
-                    const colKey: string = col.accessorKey ?? "";
-                    let value = row.original[colKey];
+            <Tooltip title="Export table to PDF file">
+              <IconButton
+                onClick={() => {
+                  const rows = table.getFilteredRowModel().rows.map((row) => {
+                    const cols = columns.map((col) => {
+                      const colKey: string = col.accessorKey ?? "";
+                      let value = row.original[colKey];
 
-                    if (Array.isArray(value)) {
-                      value = value.join(",");
-                    }
+                      if (Array.isArray(value)) {
+                        value = value.join(",");
+                      }
 
-                    return value as string;
+                      return value as string;
+                    });
+
+                    return cols;
                   });
-                });
 
-                exportToPdf(
-                  columns as { header: string; accessorKey: string }[],
-                  rows,
-                );
-              }}
-            >
-              <PictureAsPdfIcon />
-            </IconButton>
+                  const columnNames = columns.map((col) => col.header);
+
+                  usePDFTitleDialogStore
+                    .getState()
+                    .setHeadersAndRows(columnNames, rows);
+                  usePDFTitleDialogStore.getState().setOpen(true);
+                }}
+              >
+                <PictureAsPdfIcon />
+              </IconButton>
+            </Tooltip>
             <MRT_ToggleDensePaddingButton table={table} />
             <MRT_ToggleFiltersButton table={table} />
             <MRT_ShowHideColumnsButton table={table} />

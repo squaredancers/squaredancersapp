@@ -10,6 +10,7 @@ export enum Pages {
   Callers = "Callers",
   Registrants = "Registrants",
   Reports = "Reports",
+  ClassLists = "ClassLists",
 }
 
 interface PageInfo {

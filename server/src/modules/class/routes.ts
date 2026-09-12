@@ -12,6 +12,7 @@ const classSchema = z.object({
   active: z.boolean().nonoptional(),
   googleFormsName: z.string().nonoptional(),
   mailChimpName: z.string().nonoptional(),
+  mailChimpClassType: z.string().nonoptional(),
 });
 
 export const registerClassRoutes = async (app: FastifyInstance) => {
@@ -29,7 +30,9 @@ export const registerClassRoutes = async (app: FastifyInstance) => {
     const params = request.params as { id: string };
 
     if (params.id) {
-      result = await db.class.findOneOrFail(+params.id);
+      result = await db.class.findOneOrFail(+params.id, {
+        populate: ["registrants", "registrants.user"],
+      });
     } else {
       result = await db.em.find(
         Class,
@@ -42,8 +45,11 @@ export const registerClassRoutes = async (app: FastifyInstance) => {
             "active",
             "googleFormsName",
             "mailChimpName",
+            "mailChimpClassType",
             "classInfo.id",
             "classInfo.name",
+            "classInfo.googleFormsName",
+            "classInfo.mailChimpClassType",
             "registrants.id",
             "registrants.user",
             "registrants.dateRegistered",
@@ -58,7 +64,7 @@ export const registerClassRoutes = async (app: FastifyInstance) => {
 
     return result;
   });
-  0;
+
   app.post("/", async (request) => {
     verifyRole(request?.userInfo?.roles ?? null, []);
 

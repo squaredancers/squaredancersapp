@@ -1,4 +1,6 @@
+import CheckIcon from "@mui/icons-material/Check";
 import ImportExportIcon from "@mui/icons-material/ImportExport";
+import MailIcon from "@mui/icons-material/Mail";
 import SettingsIcon from "@mui/icons-material/Settings";
 import {
   Box,
@@ -16,15 +18,19 @@ import {
   MenuItem,
   OutlinedInput,
   Select,
+  Tooltip,
 } from "@mui/material";
 import {
+  MRT_Row,
   MRT_TableInstance,
   // createRow,
   type MRT_ColumnDef,
 } from "material-react-table";
 import { useEffect, useState } from "react";
+import useBulkUpdateConfDialogStore from "../../../../stores/useBulkUpdateConfDialog.js";
 import useCsvDialogStore from "../../../../stores/useCvsDialogStore.js";
 import useFormColumnMapDialogStore from "../../../../stores/useFormColumnMapDialogStore.js";
+import useMailchimpDialogStore from "../../../../stores/useMailchimpDialogStore.js";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import Conditional from "../../../common/Conditional.js";
 import { ClassesServerTypeClass } from "../classes/ClassesTable.js";
@@ -39,19 +45,103 @@ import {
   RegistrantTableType,
 } from "./registrantsTypes.js";
 
+// A map of row data name to the mailchimp name
+const mailChimpMap: [keyof RegistrantTableType, string][] = [
+  ["userFirstName", "First Name"],
+  ["userLastName", "Last Name"],
+  ["userEmail", "Email Address"],
+  ["classMailChimpName", "RegClass"],
+  ["classMailChimpClassType", "Class"],
+  ["paidSession", "ClassPaid"],
+  ["howWillPaymentBeMade", "PaymentKind"],
+  ["paymentType", "PaymentType"],
+  ["confirmationSent", "ConfirmationSent"],
+];
+
+const convertRowsToCsv = (rows: MRT_Row<RegistrantTableType>[]): string => {
+  const csvRows: string[] = [];
+
+  // First row with headers
+  const headerRow: string[] = mailChimpMap.map((entry) => entry[1]);
+
+  csvRows.push(headerRow.join(","));
+
+  rows.forEach((row) => {
+    const originalRow = row.original;
+    const columnData = mailChimpMap.map((entry) => originalRow[entry[0]]);
+    const line = columnData.join(",");
+
+    console.log("Line=", line);
+    csvRows.push(line);
+  });
+
+  const result = csvRows.join("\n");
+
+  console.log("Result=", result);
+  return result;
+};
+
+const MailchimpExportButton = (props: {
+  rows: MRT_Row<RegistrantTableType>[];
+}) => {
+  const setOpen = useMailchimpDialogStore((state) => state.setOpen);
+  const setContent = useMailchimpDialogStore((state) => state.setFileContent);
+
+  return (
+    <Tooltip title="Export data for Mailchimp">
+      <IconButton
+        onClick={() => {
+          setContent(convertRowsToCsv(props.rows));
+          setOpen(true);
+        }}
+      >
+        <MailIcon />
+      </IconButton>
+    </Tooltip>
+  );
+};
+
 const CustomImportButton = (props: { refreshTable: () => Promise<void> }) => {
   const setOpen = useCsvDialogStore((state) => state.setOpen);
   const setCallAfterSave = useCsvDialogStore((state) => state.setCallAfterSave);
 
   return (
-    <IconButton
-      onClick={() => {
-        setCallAfterSave(props.refreshTable);
-        setOpen(true);
-      }}
-    >
-      <ImportExportIcon />
-    </IconButton>
+    <Tooltip title="Import from google forms">
+      <IconButton
+        onClick={() => {
+          setCallAfterSave(props.refreshTable);
+          setOpen(true);
+        }}
+      >
+        <ImportExportIcon />
+      </IconButton>
+    </Tooltip>
+  );
+};
+
+const CustomBulkUpdateButton = (props: {
+  refreshTable: () => Promise<void>;
+  rows: MRT_Row<RegistrantTableType>[];
+}) => {
+  const setOpen = useBulkUpdateConfDialogStore((state) => state.setOpen);
+  const setIds = useBulkUpdateConfDialogStore((state) => state.setIds);
+  const setCallAfterSave = useBulkUpdateConfDialogStore(
+    (state) => state.setCallAfterSave,
+  );
+  const ids: number[] = props.rows.map((row) => row.original.id);
+
+  return (
+    <Tooltip title="Bulk update of confirmation sent">
+      <IconButton
+        onClick={() => {
+          setIds(ids);
+          setCallAfterSave(props.refreshTable);
+          setOpen(true);
+        }}
+      >
+        <CheckIcon />
+      </IconButton>
+    </Tooltip>
   );
 };
 
@@ -59,14 +149,16 @@ const CustomGearButton = () => {
   const openDialog = useFormColumnMapDialogStore((state) => state.openDialog);
 
   return (
-    <IconButton
-      onClick={() => {
-        console.log("Click gear");
-        openDialog();
-      }}
-    >
-      <SettingsIcon />
-    </IconButton>
+    <Tooltip title="Define google forms mappings">
+      <IconButton
+        onClick={() => {
+          console.log("Click gear");
+          openDialog();
+        }}
+      >
+        <SettingsIcon />
+      </IconButton>
+    </Tooltip>
   );
 };
 
@@ -84,10 +176,13 @@ class RegistrantTableClass extends BaseTable<
   ): React.FC | null {
     return () => {
       const { mutateAsync: refreshRows } = this.useCustomAction();
+      const rows = table.getPrePaginationRowModel().rows;
 
       return (
         <>
           <CustomImportButton refreshTable={refreshRows} />
+          <MailchimpExportButton rows={rows} />
+          <CustomBulkUpdateButton refreshTable={refreshRows} rows={rows} />
           <CustomGearButton />
         </>
       );
@@ -117,6 +212,9 @@ class RegistrantTableClass extends BaseTable<
     return {
       id: 1,
       userName: "",
+      userFirstName: "",
+      userLastName: "",
+      userEmail: "",
       userId: 0,
       paymentType: "session",
       paidSession: false,
@@ -125,6 +223,9 @@ class RegistrantTableClass extends BaseTable<
       classId: 0,
       dateRegistered: new Date(),
       howWillPaymentBeMade: "etransfer",
+      classMailChimpName: "",
+      confirmationSent: false,
+      classMailChimpClassType: "",
     };
   };
 
@@ -171,6 +272,15 @@ class RegistrantTableClass extends BaseTable<
       {
         accessorKey: "paidSession",
         header: "Paid session",
+        Cell: ({ cell }) => {
+          const value = cell.getValue<boolean>();
+
+          return <Chip label={value ? "True" : "False"} size="small" />;
+        },
+      },
+      {
+        accessorKey: "confirmationSent",
+        header: "Confirmation sent",
         Cell: ({ cell }) => {
           const value = cell.getValue<boolean>();
 
@@ -449,7 +559,23 @@ class RegistrantTableClass extends BaseTable<
                 label="Session paid?"
               />
             </FormGroup>
-
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={values?.confirmationSent}
+                    onChange={(event) => {
+                      setValues({
+                        ...values!,
+                        confirmationSent: event.target.checked,
+                      });
+                    }}
+                    color="primary"
+                  />
+                }
+                label="Confirmation sent?"
+              />
+            </FormGroup>
             <Box
               sx={{
                 display: "flex",

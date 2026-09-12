@@ -98,10 +98,6 @@ class UserTableClass extends BaseTable<
   }
 
   public getColumns(): MRT_ColumnDef<UserTableType, unknown>[] {
-    const validationErrors = useValidationStore.getState().validationErrors;
-    const setValidationErrors =
-      useValidationStore.getState().setValidationErrors;
-
     return [
       {
         accessorKey: "firstName",

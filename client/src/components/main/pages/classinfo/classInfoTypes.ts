@@ -14,6 +14,7 @@ export interface ClassInfoServerType {
   day: DaysType;
   hours: number;
   googleFormsName: string;
+  mailChimpClassType: string;
   location: { id: number; name: string; rent: number } | number;
   caller:
     | {
@@ -29,6 +30,7 @@ export interface ClassInfoTableType {
   name: string;
   day: DaysType;
   googleFormsName: string;
+  mailChimpClassType: string;
   hours: string;
   callerId: number;
   callerName: string;

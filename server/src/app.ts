@@ -1,9 +1,11 @@
 import fastifyJWT from "@fastify/jwt";
 import { MikroORM, NotFoundError, RequestContext } from "@mikro-orm/core";
+import "dotenv/config";
 import { fastify, FastifyError } from "fastify";
 import { registerCallerRoutes } from "./modules/caller/routes.js";
 import { registerClassRoutes } from "./modules/class/routes.js";
 import { registerClassInfoRoutes } from "./modules/classInfo/routes.js";
+import { registerClassListsRoutes } from "./modules/ClassLists/routes.js";
 import { registerClassRegistrantRoutes } from "./modules/classRegistrant/routes.js";
 import { registerEnvRoutes } from "./modules/env/routes.js";
 import { registerLocationRoutes } from "./modules/location/routes.js";
@@ -13,8 +15,8 @@ import { registerSettingsRoutes } from "./modules/settings/routes.js";
 import { registerUserRoutes } from "./modules/user/routes.js";
 
 import fastifyStatic from "@fastify/static";
-import "dotenv/config";
 import { readFileSync } from "fs";
+import { exec } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "path";
 import { initORM } from "./db.js";
@@ -56,10 +58,24 @@ export async function bootstrap(port = 3001) {
     },
   });
 
+  const useToken = process.env.USE_TOKEN_ONLY;
+  const useTokenEmail = useToken ? "TokenEmail" : null;
+  let useTokenToken: string | null = null;
+
   // register JWT plugin
-  app.register(fastifyJWT, {
-    secret: jwtSecret,
-  });
+  app
+    .register(fastifyJWT, {
+      secret: jwtSecret,
+    })
+    .after((err) => {
+      if (err) throw err;
+
+      // Safe to run here
+      useTokenToken =
+        useTokenEmail !== null
+          ? app.jwt.sign({ email: useTokenEmail }, { expiresIn: 60 * 60 })
+          : null;
+    });
 
   // register request context hook
   app.addHook("onRequest", (request, reply, done) => {
@@ -72,10 +88,29 @@ export async function bootstrap(port = 3001) {
     // There wont be a token for the login path
     let routerPath = request.routeOptions.url ?? "";
 
-    routerPath = "login"; //debug
+    //routerPath = "login"; //debug
 
-    console.log("Router path=", routerPath);
-    if (routerPath.indexOf("login") === -1) {
+    console.log(
+      "Router path=",
+      routerPath,
+      "router length=",
+      routerPath.length,
+    );
+
+    if (routerPath === "/*") return;
+
+    if (useTokenToken !== null) {
+      // We are just checking that the token is as
+      const authHeaderToken = request.headers.authorization?.split(" ");
+
+      console.log("useToken=", useTokenToken, "real token=", authHeaderToken);
+      if (
+        authHeaderToken?.length !== 2 ||
+        authHeaderToken[1] !== useTokenToken
+      ) {
+        throw new Error("Unauthorized request");
+      }
+    } else if (routerPath.indexOf("login") === -1) {
       const ret = await request.jwtVerify<{ email: string }>();
       const userRecord = await db.em.findOneOrFail(User, { email: ret.email });
       const userInfo = {
@@ -125,8 +160,17 @@ export async function bootstrap(port = 3001) {
   app.register(registerEventRoutes, { prefix: "api/event" });
   app.register(registerReportRoutes, { prefix: "api/report" });
   app.register(registerSettingsRoutes, { prefix: "api/settings" });
+  app.register(registerClassListsRoutes, { prefix: "api/classlists" });
 
   const url = await app.listen({ port });
+
+  if (useTokenToken !== null) {
+    const urlWithToken = `${url}?token=${useTokenToken}`;
+    const command = `start ${urlWithToken}`;
+
+    console.log("Command=", command);
+    exec(command);
+  }
 
   return { app, url };
 }

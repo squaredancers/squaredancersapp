@@ -31,5 +31,8 @@ export class ClassInfo extends BaseEntity {
   hours!: number;
 
   @Property({ default: "" })
+  mailChimpClassType!: string;
+
+  @Property({ default: "" })
   googleFormsName!: string;
 }

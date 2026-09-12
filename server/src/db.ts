@@ -7,6 +7,7 @@ import {
 import { Caller } from "./modules/caller/caller.entity.js";
 import { Class } from "./modules/class/class.entity.js";
 import { ClassInfo } from "./modules/classInfo/classInfo.entity.js";
+import { ClassLists } from "./modules/ClassLists/classLists.entity.js";
 import { ClassRegistrant } from "./modules/classRegistrant/classRegistrant.entity.js";
 import { Event } from "./modules/event/event.entity.js";
 import { Location } from "./modules/location/location.entity.js";
@@ -24,6 +25,7 @@ export interface Services {
   event: EntityRepository<Event>;
   classRegistrant: EntityRepository<ClassRegistrant>;
   settings: EntityRepository<Settings>;
+  classLists: EntityRepository<ClassLists>;
 }
 
 let cache: Services;
@@ -47,5 +49,6 @@ export const initORM = async (options?: Options): Promise<Services> => {
     event: orm.em.getRepository(Event),
     classRegistrant: orm.em.getRepository(ClassRegistrant),
     settings: orm.em.getRepository(Settings),
+    classLists: orm.em.getRepository(ClassLists),
   });
 };

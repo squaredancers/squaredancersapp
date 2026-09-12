@@ -19,12 +19,14 @@ const classSchema = z.object({
     .enum(["cash", "etransfer", "creditcard"])
     .nonoptional(),
   paidSession: z.boolean().nonoptional(),
+  confirmationSent: z.boolean().nonoptional(),
   dateRegistered: z.coerce.date(),
 });
 
 const MAPPING_SETTINGS: string = "mapping_settings";
 
 const bulkAddSchema = z.array(z.string());
+const bulkUpdateConfSchema = z.array(z.number());
 
 const getActiveClass = (
   googleFormsName: string,
@@ -84,15 +86,44 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
             "howWillPaymentBeMade",
             "paidSession",
             "dateRegistered",
+            "confirmationSent",
             "class.id",
             "class.name",
             "class.active",
+            "class.mailChimpName",
+            "class.mailChimpClassType",
             "user.id",
             "user.firstName",
             "user.lastName",
+            "user.email",
           ],
         },
       );
+    }
+
+    return result;
+  });
+
+  // The input data for this call is an array of registrant ids.
+  // This method will set the confirmationSent field to true for
+  // all registrants specified.
+  app.post("/bulkUpdateConf", async (request) => {
+    verifyRole(request?.userInfo?.roles ?? null, []);
+    let result = true;
+
+    try {
+      const regIdsToUpdate = bulkUpdateConfSchema.parse(request.body);
+
+      for (let index = 0; index < regIdsToUpdate.length; index++) {
+        const registrantId = regIdsToUpdate[index];
+        const registrant = await db.classRegistrant.findOneOrFail(registrantId);
+
+        registrant.confirmationSent = true;
+      }
+
+      await db.em.flush();
+    } catch (exc) {
+      result = false;
     }
 
     return result;
@@ -106,6 +137,7 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
       error: string;
       newUsersAdded: string[];
       existingAdded: string[];
+      skippedEntries: string[];
     }> => {
       verifyRole(request?.userInfo?.roles ?? null, []);
 
@@ -115,7 +147,13 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
         error: string;
         newUsersAdded: string[];
         existingAdded: string[];
-      } = { error: "", newUsersAdded: [], existingAdded: [] };
+        skippedEntries: string[];
+      } = {
+        error: "",
+        newUsersAdded: [],
+        existingAdded: [],
+        skippedEntries: [],
+      };
 
       const mappings = await db.em.findOneOrFail(Settings, {
         name: MAPPING_SETTINGS,
@@ -296,7 +334,14 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
 
             if (newTimeStamp.getTime() > existingTimeStamp.getTime()) {
               // We have a new entry that should be replace the existing one
+              responseMessage.skippedEntries.push(
+                JSON.stringify(registrantsMap[email]),
+              );
               registrantsMap[email] = registrantEntry;
+            } else {
+              responseMessage.skippedEntries.push(
+                JSON.stringify(registrantEntry),
+              );
             }
           } else {
             registrantsMap[email] = registrantEntry;
@@ -396,6 +441,7 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
             howWillPaymentBeMade: entry.howWillPaymentBeMade,
             paidSession: false,
             dateRegistered: entry.timestampDate,
+            confirmationSent: false,
           });
         }
       }

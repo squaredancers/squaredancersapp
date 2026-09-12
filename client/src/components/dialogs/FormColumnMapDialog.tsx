@@ -1,4 +1,6 @@
+import { ArrowDownward, ArrowUpward, Delete } from "@mui/icons-material";
 import {
+  IconButton,
   ListItemText,
   MenuItem,
   Select,
@@ -11,6 +13,7 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import Tooltip from "@mui/material/Tooltip";
 import useFormColumnMapDialogStore, {
   fields as allFields,
 } from "../../stores/useFormColumnMapDialogStore.js";
@@ -23,6 +26,11 @@ const FormColumnMapDialog = () => {
     (state) => state.updateMapping,
   );
   const fields = useFormColumnMapDialogStore((state) => state.fields);
+  const moveMapping = useFormColumnMapDialogStore((state) => state.moveMapping);
+  const deleteMapping = useFormColumnMapDialogStore(
+    (state) => state.deleteMapping,
+  );
+
   const noMapping = allFields[0];
 
   return (
@@ -79,6 +87,37 @@ const FormColumnMapDialog = () => {
                           );
                         })}
                       </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Tooltip title="Move mapping up">
+                        <IconButton
+                          disabled={index === 0}
+                          onClick={() => {
+                            moveMapping(index, true);
+                          }}
+                        >
+                          <ArrowUpward />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Move mapping down">
+                        <IconButton
+                          disabled={index === fields.length - 1}
+                          onClick={() => {
+                            moveMapping(index, false);
+                          }}
+                        >
+                          <ArrowDownward />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Delete mapping">
+                        <IconButton
+                          onClick={() => {
+                            deleteMapping(index);
+                          }}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
                   </tr>
                 ))}

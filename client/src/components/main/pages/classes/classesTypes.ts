@@ -1,3 +1,15 @@
+export interface RegistrantType {
+  user: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  paymentType: "session" | "perClass";
+  howWillPaymentBeMade: "etransfer" | "cash" | "creditcard";
+  paidSession: boolean;
+  confirmationSent: boolean;
+}
 export interface ClassesServerType {
   id: number;
   name: string;
@@ -5,6 +17,8 @@ export interface ClassesServerType {
   active: boolean;
   googleFormsName: string;
   mailChimpName: string;
+  mailChimpClassType: string;
+  registrants: RegistrantType[];
 }
 
 export interface ClassesTableType {
@@ -15,4 +29,6 @@ export interface ClassesTableType {
   active: boolean;
   googleFormsName: string;
   mailChimpName: string;
+  mailChimpClassType: string;
+  registrants: RegistrantType[];
 }
