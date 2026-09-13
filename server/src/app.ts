@@ -82,21 +82,13 @@ export async function bootstrap(port = 3001) {
     RequestContext.create(orm.em, done);
   });
 
-  app.addHook("onRequest", async (request) => {
+  app.addHook("onRequest", async (request, reply) => {
     console.log("In on request headers=", request.headers);
 
     // There wont be a token for the login path
     let routerPath = request.routeOptions.url ?? "";
 
-    //routerPath = "login"; //debug
-
-    console.log(
-      "Router path=",
-      routerPath,
-      "router length=",
-      routerPath.length,
-    );
-
+    // This route indicates a static file path, so we don't need to verify it.
     if (routerPath === "/*") return;
 
     if (useTokenToken !== null) {
@@ -108,7 +100,9 @@ export async function bootstrap(port = 3001) {
         authHeaderToken?.length !== 2 ||
         authHeaderToken[1] !== useTokenToken
       ) {
-        throw new Error("Unauthorized request");
+        return reply
+          .code(401)
+          .send({ error: "Unauthorized", message: "Invalid token specified." });
       }
     } else if (routerPath.indexOf("login") === -1) {
       const ret = await request.jwtVerify<{ email: string }>();

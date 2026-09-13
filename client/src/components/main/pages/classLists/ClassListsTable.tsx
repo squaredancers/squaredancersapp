@@ -142,6 +142,8 @@ class ClassListsTableClass extends BaseTable<
         month: "long",
         day: "numeric",
         year: "numeric",
+        hour: "numeric",
+        hour12: true, // Enables AM/PM
       };
       const formattedDate = date.toLocaleDateString("en-US", options);
       const pdfState = usePDFTitleDialogStore.getState();
