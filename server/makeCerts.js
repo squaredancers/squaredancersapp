@@ -1,5 +1,5 @@
-import { createCA, createCert } from "mkcert";
 import { writeFileSync } from "fs";
+import { createCA, createCert } from "mkcert";
 
 const ca = await createCA({
   organization: "Triangle Squares dancers",
@@ -15,8 +15,8 @@ const cert = await createCert({
   validity: 365,
 });
 
-writeFileSync("server.key", ca.key);
-writeFileSync("server.cert", ca.cert);
+writeFileSync("server.key", cert.key);
+writeFileSync("server.cert", cert.cert);
 console.log("Files generated");
 //console.log(cert.key, cert.cert); // certificate info
 //console.log(`${cert.cert}${ca.cert}`); // create full chain certificate by merging CA and domain certificates
