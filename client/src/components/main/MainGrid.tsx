@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import usePageStore, { Pages } from "../../stores/usePageStore.js";
 import useSettingsStore from "../../stores/useSettingsStore.js";
 import Conditional from "../common/Conditional.js";
+import NotificationMessage from "../common/NotificationMessage.js";
 import CallerTable from "./pages/caller/CallerTable.js";
 import ClassesTable from "./pages/classes/ClassesTable.js";
 import ClassInfoTable from "./pages/classinfo/ClassinfoTable.js";
@@ -54,6 +55,7 @@ const MainGrid = () => {
       <CenteredText>
         <span>Triangle Squares</span>
       </CenteredText>
+      <NotificationMessage />
       <Conditional condition={page === Pages.Home}>
         <HomePage />
       </Conditional>

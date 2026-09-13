@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, Method } from "axios";
+import useNotificationMessageStore from "../stores/useNotificationMessageStore.js";
 import useUserStore from "../stores/useUserStore.js";
 
 export interface CallerWithHours {
@@ -10,6 +11,15 @@ export interface CallerWithHours {
   };
   hours: number;
 }
+
+const handleError = () => {
+  useNotificationMessageStore
+    .getState()
+    .setMessage(
+      "An error occured getting data from the server.  The token may not be valid.",
+      10000,
+    );
+};
 class Server {
   private static getConfig(
     method: Method,
@@ -79,7 +89,9 @@ class Server {
       const response: { data: string[] } = await axios(requestConfig);
 
       result = response?.data ?? [];
-    } catch (exc) {}
+    } catch (exc) {
+      handleError();
+    }
 
     return result;
   }

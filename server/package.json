@@ -6,6 +6,9 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
+    "installclient": "cd ../client && npm install",
+    "buildclient": "cd ../client && npm run build",
+    "makecert": "node dist/makecert.js",
     "create": "node dist/seedDb.js",
     "update": "node dist/updateDb.js",
     "devstart": "nodemon dist/server.js",
