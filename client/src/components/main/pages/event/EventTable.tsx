@@ -133,6 +133,9 @@ class EventTableClass extends BaseTable<
       roomCharge: !ValidationUtils.validateNumeric(event.roomCharge)
         ? "Incorrect room charge number value"
         : "",
+      hours: !ValidationUtils.validateNumeric(event.hours)
+        ? "Incorrect hours number value"
+        : "",
       name: !ValidationUtils.validateRequired(event.name)
         ? "Name is required"
         : "",
@@ -151,6 +154,30 @@ class EventTableClass extends BaseTable<
         Cell: ({ cell }) => (
           <span>{(cell.getValue() as Date).toISOString().split("T")[0]}</span>
         ),
+        filterFn: (row, id, filterValue) => {
+          const [start, end] = filterValue;
+          const rowValue = row.getValue<Date>(id);
+
+          if (!rowValue) return false;
+
+          const rowTime = rowValue.getTime();
+
+          // 1. Check start date boundary (Inclusive)
+          if (start) {
+            const startOfDay = new Date(start);
+            startOfDay.setHours(0, 0, 0, 0); // Force to midnight start
+            if (rowTime < startOfDay.getTime()) return false;
+          }
+
+          // 2. Check end date boundary (Inclusive)
+          if (end) {
+            const endOfDay = new Date(end);
+            endOfDay.setHours(23, 59, 59, 999); // Force to final millisecond of the day
+            if (rowTime > endOfDay.getTime()) return false;
+          }
+
+          return true;
+        },
       },
       {
         accessorKey: "name",
@@ -340,10 +367,33 @@ class EventTableClass extends BaseTable<
         getInfo();
       }, [editingRow, creatingRow]);
 
-      const handleChange = (event: any) => {
+      const handleChange = async (event: any) => {
+        // let callerCharge = values!.callerCharge;
+
+        try {
+          if (event.target.name === "hours") {
+            // Also update the caller charge.
+            const clazz = allClasses.find(
+              (clazz) => clazz.id === values?.classId,
+            );
+            const classInfo = await new ClassInfoServerTypeClass().getRow(
+              clazz?.classInfoId!,
+            );
+
+            const callerCharge = (
+              ((classInfo?.hourlyRate ?? 0) *
+                parseFloat(classInfo?.hours ?? "0")) /
+              100
+            ).toFixed(2);
+          }
+        } catch (exc) {
+          console.log(exc);
+        }
+
         setValues({
           ...values!,
           [event.target.name]: event.target.value,
+          //callerCharge,
         });
       };
 

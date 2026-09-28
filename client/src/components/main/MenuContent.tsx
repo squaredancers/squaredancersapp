@@ -5,6 +5,7 @@ import RegistrantIcon from "@mui/icons-material/Groups";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import InfoRoundedIcon from "@mui/icons-material/InfoRounded";
 import LocationIcon from "@mui/icons-material/LocationPin";
+import MailIcon from "@mui/icons-material/Mail";
 import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
 import SchoolIcon from "@mui/icons-material/SchoolRounded";
 import SummarizeIcon from "@mui/icons-material/Summarize";
@@ -27,6 +28,7 @@ const mainListItems = [
   { text: Pages.Registrants, icon: <RegistrantIcon /> },
   { text: Pages.ClassLists, icon: <ChecklistRtlIcon /> },
   { text: Pages.Reports, icon: <SummarizeIcon /> },
+  { text: Pages.MailTemplate, icon: <MailIcon /> },
 ];
 
 const secondaryListItems = [

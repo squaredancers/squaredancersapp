@@ -47,7 +47,7 @@ abstract class BaseServer<
     return config;
   }
 
-  async getRow(id: number): Promise<RowTableType | null> {
+  public async getRow(id: number): Promise<RowTableType | null> {
     const requestConfig = this.getConfig("GET", this.getRowPath(id), "");
     let result: RowTableType | null = null;
 
@@ -62,7 +62,7 @@ abstract class BaseServer<
     return result;
   }
 
-  async getRows(): Promise<RowTableType[]> {
+  public async getRows(): Promise<RowTableType[]> {
     const requestConfig = this.getConfig("GET", this.getPath(), "");
     let result: RowTableType[] = [];
 
@@ -77,7 +77,7 @@ abstract class BaseServer<
     return result;
   }
 
-  async createRow(row: RowTableType): Promise<void> {
+  public async createRow(row: RowTableType): Promise<void> {
     const rowServer: RowServerType = this.mapTableToServer(row);
     const requestConfig = this.getConfig(
       "POST",
@@ -92,7 +92,7 @@ abstract class BaseServer<
     return;
   }
 
-  async updateRow(row: RowTableType): Promise<void> {
+  public async updateRow(row: RowTableType): Promise<void> {
     const rowServer: RowServerType = this.mapTableToServer(row);
     const requestConfig = this.getConfig(
       "PATCH",
@@ -107,7 +107,7 @@ abstract class BaseServer<
     return;
   }
 
-  async deleteRow(row: RowTableType): Promise<void> {
+  public async deleteRow(row: RowTableType): Promise<void> {
     const requestConfig = this.getConfig("DELETE", this.deletePath(row.id), "");
 
     try {

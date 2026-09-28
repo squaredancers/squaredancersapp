@@ -11,6 +11,7 @@ export enum Pages {
   Registrants = "Registrants",
   Reports = "Reports",
   ClassLists = "ClassLists",
+  MailTemplate = "MailTemplate",
 }
 
 interface PageInfo {

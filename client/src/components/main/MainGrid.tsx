@@ -1,7 +1,9 @@
 import styled from "@emotion/styled";
 import Box from "@mui/material/Box";
 import { useEffect } from "react";
+import useBreadcrumbStore from "../../stores/useBreadcrumbStore.js";
 import usePageStore, { Pages } from "../../stores/usePageStore.js";
+import useRootTemplateStore from "../../stores/useRootTemplateStore.js";
 import useSettingsStore from "../../stores/useSettingsStore.js";
 import Conditional from "../common/Conditional.js";
 import NotificationMessage from "../common/NotificationMessage.js";
@@ -14,6 +16,9 @@ import { HomePage } from "./pages/home.js";
 import LocationTable from "./pages/location/LocationTable.js";
 import RegistrantTable from "./pages/registrants/registrantsTable.js";
 import { ReportTabs } from "./pages/reports/ReportTabs.js";
+import EditTemplate from "./pages/template/EditTemplate.js";
+import PreviewTemplate from "./pages/template/PreviewTemplate.js";
+import TemplateTable from "./pages/template/TemplateTable.js";
 import UserTable from "./pages/user/UsersTable.js";
 
 const CenteredText = styled.div`
@@ -44,11 +49,28 @@ const MainGrid = () => {
   const EventPage = EventTable.MainEventTableComponent;
   const RegistrantPage = RegistrantTable.MainRegistrantTableComponent;
   const ClassListsPage = ClassListsTable.MainClassListsTableComponent;
+  const TemplatePage = TemplateTable.MainTemplateTableComponent;
+  const editTemplateName = useRootTemplateStore(
+    (state) => state.editTemplateName,
+  );
+  const previewOpen = useRootTemplateStore((state) => state.previewOpen);
+  const setBreadcrumbs = useBreadcrumbStore((state) => state.setBreadcrumbs);
 
   useEffect(() => {
     // Load settings
     useSettingsStore.getState().loadSettings();
   }, []);
+
+  useEffect(() => {
+    // Set the breadcrumbs
+    if (page === Pages.MailTemplate && editTemplateName !== null) {
+      setBreadcrumbs(
+        previewOpen ? [editTemplateName, "Preview"] : [editTemplateName],
+      );
+    } else {
+      setBreadcrumbs([]);
+    }
+  }, [page, editTemplateName, previewOpen]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -94,6 +116,29 @@ const MainGrid = () => {
 
       <Conditional condition={page === Pages.Reports}>
         <ReportTabs />
+      </Conditional>
+      <Conditional
+        condition={page === Pages.MailTemplate && editTemplateName === null}
+      >
+        <TemplatePage />
+      </Conditional>
+      <Conditional
+        condition={
+          page === Pages.MailTemplate &&
+          editTemplateName !== null &&
+          !previewOpen
+        }
+      >
+        <EditTemplate />
+      </Conditional>
+      <Conditional
+        condition={
+          page === Pages.MailTemplate &&
+          editTemplateName !== null &&
+          previewOpen
+        }
+      >
+        <PreviewTemplate />
       </Conditional>
     </Box>
   );

@@ -18,6 +18,7 @@ export const exportToPdf = (
     startY: 38,
     head: [tableColumns],
     body: tableRows,
+    margin: { bottom: 30 },
   });
 
   doc.save(`${title}.pdf`);

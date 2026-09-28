@@ -244,6 +244,21 @@ class RegistrantTableClass extends BaseTable<
         accessorKey: "className",
         header: "Class name",
         enableEditing: false,
+        filterFn: (row, id, filterValue) => {
+          const filter: string = (filterValue as string).toLowerCase();
+          const value = row.original.className.toLowerCase();
+          let result: boolean = false;
+
+          if (filter.includes("|")) {
+            const splitFilter = filter.split("|");
+
+            result = splitFilter.some((filter) => value.includes(filter));
+          } else {
+            result = value.includes(filter);
+          }
+
+          return result;
+        },
       },
       {
         accessorKey: "paymentType",

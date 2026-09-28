@@ -7,7 +7,7 @@ interface SettingsStore {
   settings: { [key: string]: string };
   loading: boolean;
 
-  updateSetting: (key: string, value: string) => void;
+  updateSetting: (key: string, value: string) => Promise<void>;
   loadSettings: () => void;
 }
 
@@ -15,11 +15,12 @@ const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: {},
   loading: false,
 
-  updateSetting: async (key: string, value: string) => {
+  updateSetting: async (key: string, value: string): Promise<void> => {
     const newSettings = { ...get().settings, [key]: value };
 
     set({ settings: newSettings });
-    await Server.updateSetting(MAPPING_SETTINGS, value, false);
+
+    return await Server.updateSetting(MAPPING_SETTINGS, value, false);
   },
 
   loadSettings: async () => {

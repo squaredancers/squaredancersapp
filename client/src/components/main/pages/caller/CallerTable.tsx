@@ -263,14 +263,6 @@ class CallerTableClass extends BaseTable<
                         ? null
                         : allUsers.find((user) => user.id === userId);
 
-                    console.log(
-                      "User = ",
-                      user,
-                      "creating row",
-                      creatingRow,
-                      "users",
-                      users,
-                    );
                     return {
                       firstName: user?.firstName ?? "",
                       lastName: user?.lastName ?? "",

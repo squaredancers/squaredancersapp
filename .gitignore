@@ -11,3 +11,4 @@ server/server.key
 server/test.csv
 server/test.json
 googleResponses/*
+client/package-lock.json
