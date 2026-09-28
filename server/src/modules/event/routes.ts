@@ -220,6 +220,7 @@ export const registerEventRoutes = async (app: FastifyInstance) => {
       const classId = clazz.id;
 
       while (currentDate < endDate) {
+        console.log("Curr date", currentDate, "endDate", endDate);
         const eventKey =
           currentDate.toISOString().substring(0, 10) + "-" + classId;
 

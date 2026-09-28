@@ -117,6 +117,13 @@ export abstract class BaseTable<
     return null;
   }
 
+  public getCustomEditAction(
+    row: MRT_Row<RowTableType>,
+    refreshRows: () => void,
+  ): (() => void) | null {
+    return null;
+  }
+
   public getColumnVisibility(): { [id: string]: boolean } | undefined {
     return undefined;
   }
@@ -157,13 +164,15 @@ export abstract class BaseTable<
     //CREATE action
     const handleCreateRow: MRT_TableOptions<RowTableType>["onCreatingRowSave"] =
       async ({ values, table }: { values: any; table: any }) => {
-        const newValidationErrors = this.validateRow(values);
+        console.log("In handle create row");
 
+        const newValidationErrors = this.validateRow(values);
         if (Object.values(newValidationErrors).some((error) => error)) {
           setValidationErrors(newValidationErrors);
           return;
         }
         setValidationErrors({});
+        console.log("About to call createRowType with", values);
         await createRowType(values);
         table.setCreatingRow(null); //exit creating mode
       };
@@ -272,10 +281,25 @@ export abstract class BaseTable<
         const CustomActions = useMemo(() => {
           return this.getCustomRowActions(row);
         }, [table]);
+        const { mutateAsync: refreshRows } = this.useCustomAction();
+
         return (
           <Box sx={{ display: "flex", gap: "1rem" }}>
             <Tooltip title="Edit">
-              <IconButton onClick={() => table.setEditingRow(row)}>
+              <IconButton
+                onClick={() => {
+                  const getCustomEditAction = this.getCustomEditAction(
+                    row,
+                    refreshRows,
+                  );
+
+                  if (getCustomEditAction !== null) {
+                    getCustomEditAction();
+                  } else {
+                    table.setEditingRow(row);
+                  }
+                }}
+              >
                 <EditIcon />
               </IconButton>
             </Tooltip>
@@ -302,6 +326,8 @@ export abstract class BaseTable<
               variant="contained"
               onClick={() => {
                 const defaultRow = this.defaultCreateRow();
+
+                console.log("Default row=", defaultRow);
 
                 if (defaultRow === null) {
                   table.setCreatingRow(true);
@@ -405,10 +431,11 @@ export abstract class BaseTable<
   //CREATE hook (post new row to api)
   useCreateRowType() {
     const queryClient = useQueryClient();
-
+    console.log("In useCreateRowType");
     return useMutation({
       mutationFn: async (row: RowTableType) => {
         try {
+          console.log("In mutation to create row");
           await this.server.createRow(row);
         } catch (exc) {
           console.log(exc);
