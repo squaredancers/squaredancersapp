@@ -1,12 +1,12 @@
-import * as React from "react";
 import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+import TextField from "@mui/material/TextField";
+import * as React from "react";
 import useFormDialogStore, {
   TypeInfo,
 } from "../../stores/useFormDialogStore.js";
@@ -17,7 +17,7 @@ const FormDialog = () => {
   const updateField = useFormDialogStore((state) => state.updateField);
   const isOpen = useFormDialogStore((state) => state.isOpen);
   const validationErrors = useFormDialogStore(
-    (state) => state.validationErrors
+    (state) => state.validationErrors,
   );
   const hasValidationErrors = Object.keys(validationErrors).length !== 0;
   const title = useFormDialogStore((state) => state.title);
@@ -37,7 +37,6 @@ const FormDialog = () => {
     dialogState.closeDialog();
   };
 
-  console.log("In use form dialog.  Open = ", isOpen);
   return (
     <Dialog open={isOpen} onClose={closeDialog}>
       <DialogTitle>{title}</DialogTitle>
@@ -74,7 +73,7 @@ const FormDialog = () => {
                   onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                     updateField(
                       entry.fieldName,
-                      event.target.checked ? "true" : "false"
+                      event.target.checked ? "true" : "false",
                     );
                   }}
                 />

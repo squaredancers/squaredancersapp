@@ -325,7 +325,6 @@ class EventTableClass extends BaseTable<
       const { mutateAsync: createRowType } = this.useCreateRowType();
 
       const setValues = (values: EventTableType | null) => {
-        console.log("Setting values", { ...values });
         setInternalValues(values);
       };
 

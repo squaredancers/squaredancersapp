@@ -164,15 +164,12 @@ export abstract class BaseTable<
     //CREATE action
     const handleCreateRow: MRT_TableOptions<RowTableType>["onCreatingRowSave"] =
       async ({ values, table }: { values: any; table: any }) => {
-        console.log("In handle create row");
-
         const newValidationErrors = this.validateRow(values);
         if (Object.values(newValidationErrors).some((error) => error)) {
           setValidationErrors(newValidationErrors);
           return;
         }
         setValidationErrors({});
-        console.log("About to call createRowType with", values);
         await createRowType(values);
         table.setCreatingRow(null); //exit creating mode
       };
@@ -327,8 +324,6 @@ export abstract class BaseTable<
               onClick={() => {
                 const defaultRow = this.defaultCreateRow();
 
-                console.log("Default row=", defaultRow);
-
                 if (defaultRow === null) {
                   table.setCreatingRow(true);
                 } else {
@@ -431,11 +426,10 @@ export abstract class BaseTable<
   //CREATE hook (post new row to api)
   useCreateRowType() {
     const queryClient = useQueryClient();
-    console.log("In useCreateRowType");
+
     return useMutation({
       mutationFn: async (row: RowTableType) => {
         try {
-          console.log("In mutation to create row");
           await this.server.createRow(row);
         } catch (exc) {
           console.log(exc);

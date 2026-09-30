@@ -12,6 +12,10 @@ interface State {
   selectedId: string | null;
   editTemplateName: string | null;
   previewOpen: boolean;
+  templateDialogOpen: boolean;
+  templateDialogJsonString: string;
+  setTemplateDialogOpen: (templateDialogOpen: boolean) => void;
+  setTemplateDialogJsonString: (jsonString: string) => void;
   saveData: (name: string, jsonString: string) => void;
 
   loadState: (
@@ -31,6 +35,8 @@ const useRootTemplateStore = create<State>((set, get) => ({
   selectedId: null,
   editTemplateName: null,
   previewOpen: false,
+  templateDialogOpen: false,
+  templateDialogJsonString: "{}",
   saveData: () => {},
 
   loadState: (
@@ -98,32 +104,14 @@ const useRootTemplateStore = create<State>((set, get) => ({
 
     set({ selectedItem: storeItemFound, selectedId: id });
   },
+
+  setTemplateDialogOpen: (templateDialogOpen: boolean) => {
+    set({ templateDialogOpen });
+  },
+
+  setTemplateDialogJsonString: (jsonString: string) => {
+    set({ templateDialogJsonString: jsonString });
+  },
 }));
-
-const rootState: JSONTemplateState = {
-  name: "Template root",
-  nodeType: NodeType.TemplateRoot,
-  fieldName: "",
-  text: "",
-  childItems: [
-    {
-      nodeType: NodeType.Text,
-      name: "Child 1",
-      fieldName: "",
-      text: "",
-      childItems: [],
-    },
-    {
-      nodeType: NodeType.Text,
-      name: "Child 2",
-      fieldName: "",
-      text: "",
-      childItems: [],
-    },
-  ],
-  variables: ["var1", "var2"],
-};
-
-//useRootTemplateStore.getState().loadState(rootState);
 
 export default useRootTemplateStore;

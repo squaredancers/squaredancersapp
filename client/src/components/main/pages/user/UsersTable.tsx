@@ -93,7 +93,6 @@ class UserTableClass extends BaseTable<
         : "",
     };
 
-    console.log("In validation row:", result);
     return result;
   }
 
@@ -149,7 +148,6 @@ class UserTableClass extends BaseTable<
       const { mutateAsync: createRowType } = this.useCreateRowType();
 
       const setValues = (values: UserTableType | null) => {
-        console.log("Setting values", { ...values });
         setInternalValues(values);
       };
 
@@ -291,7 +289,6 @@ class UserTableClass extends BaseTable<
                 value={values?.roles || []} // Default to empty array if value is null/undefined
                 onChange={(event) => {
                   const newRoles = event.target.value as string[];
-                  console.log("New value=", newRoles);
                   // MUI Select with multiple={true} returns an array of values directly
                   setValues({ ...values!, roles: newRoles });
 

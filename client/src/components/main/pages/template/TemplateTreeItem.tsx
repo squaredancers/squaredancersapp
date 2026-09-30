@@ -7,6 +7,7 @@ import VariableIcon from "@mui/icons-material/QuestionMark";
 import TextIcon from "@mui/icons-material/Subject";
 import RootIcon from "@mui/icons-material/Summarize";
 
+import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
 import { Box, IconButton, Tooltip, Typography } from "@mui/material";
 import { TreeItem } from "@mui/x-tree-view/TreeItem";
 import {
@@ -20,6 +21,9 @@ const renderLabel = (
   setExpandedItems: React.Dispatch<React.SetStateAction<string[]>>,
 ) => {
   const useStore = store;
+  const parentStore = useStore((state) => state.parent);
+  const parentChildItems: TreeItemStore[] | null =
+    parentStore === null ? null : parentStore.getState().childItems;
   const id = useStore((state) => state.id);
   const nodeType = useStore((state) => state.nodeType);
   const hasAddIcons =
@@ -30,6 +34,15 @@ const renderLabel = (
     nodeType === NodeType.Text ||
     nodeType === NodeType.Condition ||
     nodeType === NodeType.Variable;
+  const childIndex =
+    parentChildItems === null
+      ? -1
+      : parentChildItems.findIndex((child) => child.getState().id === id);
+  const isTextOrCondition =
+    nodeType === NodeType.Text || nodeType === NodeType.Condition;
+  const showUp = childIndex !== -1 && childIndex !== 0;
+  const showDown =
+    childIndex !== -1 && childIndex !== (parentChildItems?.length ?? 0) - 1;
   let name = useStore((state) => state.name);
   const variable = useStore((state) => state.fieldName);
   const value = useStore((state) => state.valueName);
@@ -37,6 +50,8 @@ const renderLabel = (
   name = variable && value ? `${name}: ${variable} = ${value}` : name;
   const createNode = useStore((state) => state.createItem);
   const deleteNode = useStore((state) => state.deleteItem);
+  const moveChild =
+    parentStore === null ? () => {} : parentStore.getState().moveChild;
   const updateParent = (childId: string | null) => {
     return (prevExpanded: string[]) => {
       let expandedList = prevExpanded.includes(id)
@@ -122,6 +137,38 @@ const renderLabel = (
             >
               <ConditionIcon fontSize="small" />
             </IconButton>
+          </Tooltip>
+        </Conditional>
+        <Conditional condition={isTextOrCondition}>
+          <Tooltip title="Move up">
+            <span>
+              <IconButton
+                size="small"
+                disabled={!showUp}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  moveChild(id, true);
+                }}
+                color="primary"
+              >
+                <ArrowUpward fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Move down">
+            <span>
+              <IconButton
+                size="small"
+                disabled={!showDown}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  moveChild(id, false);
+                }}
+                color="primary"
+              >
+                <ArrowDownward fontSize="small" />
+              </IconButton>
+            </span>
           </Tooltip>
         </Conditional>
         <Conditional condition={hasDeleteIcon}>

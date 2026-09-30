@@ -231,7 +231,6 @@ class ClassListsTableClass extends BaseTable<
         setShowAllHeaders(event.target.checked);
       };
 
-      console.log("In render headers=", JSON.stringify(headers));
       useEffect(() => {
         const classesServer = new ClassesServerTypeClass();
 
@@ -248,8 +247,6 @@ class ClassListsTableClass extends BaseTable<
                 : (prevValues?.columns.split(",") ?? []);
             const allColumns = [...columns];
 
-            console.log("Old columns=", columns);
-
             // Add unselected columns to the end
             fieldHeaders.forEach((fieldHeader) => {
               if (!columns.includes(fieldHeader)) {
@@ -257,7 +254,6 @@ class ClassListsTableClass extends BaseTable<
               }
             });
 
-            console.log("All columns=", allColumns);
             setHeadersAndRows(allColumns, []);
 
             // Set the selection state
@@ -296,8 +292,6 @@ class ClassListsTableClass extends BaseTable<
           .map((header) => header.name)
           .join(",");
 
-        console.log("Setting columns to", columns);
-        console.log("Values=", JSON.stringify(values));
         const updatedValues = { ...values!, columns };
 
         setValidationErrors({});

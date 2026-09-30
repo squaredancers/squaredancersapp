@@ -71,13 +71,11 @@ const convertRowsToCsv = (rows: MRT_Row<RegistrantTableType>[]): string => {
     const columnData = mailChimpMap.map((entry) => originalRow[entry[0]]);
     const line = columnData.join(",");
 
-    console.log("Line=", line);
     csvRows.push(line);
   });
 
   const result = csvRows.join("\n");
 
-  console.log("Result=", result);
   return result;
 };
 
@@ -152,7 +150,6 @@ const CustomGearButton = () => {
     <Tooltip title="Define google forms mappings">
       <IconButton
         onClick={() => {
-          console.log("Click gear");
           openDialog();
         }}
       >
