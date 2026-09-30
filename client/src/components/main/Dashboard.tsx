@@ -10,6 +10,7 @@ import ConfirmationDialog from "../common/ConfirmationDialog.js";
 import FormColumnMapDialog from "../dialogs/FormColumnMapDialog.js";
 import MailchimpDialog from "../dialogs/MailchimpDialog.js";
 import PDFTitleDialog from "../dialogs/PDFTitleDialog.js";
+import TemplateDialog from "../dialogs/TemplateDialog.js";
 import Header from "./Header.js";
 import MainGrid from "./MainGrid.js";
 import SideMenu from "./SideMenu.js";
@@ -78,6 +79,7 @@ export default function Dashboard(props: {}) {
               description="You are about to change all registrants shown in this table so that the confirmation sent is true.  Do you want to proceed?"
             />
             <PDFTitleDialog />
+            <TemplateDialog />
             <MainGrid />
           </Stack>
         </Box>

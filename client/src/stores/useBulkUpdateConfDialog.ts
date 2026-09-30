@@ -35,8 +35,6 @@ const useBulkUpdateConfDialogStore = create<DialogStore>((set, get) => ({
     const bulkResponse = await registrantServer.bulkUpdateConfSent(get().ids);
 
     await get().callAfterSave();
-
-    console.log("Bulk update response=", bulkResponse);
   },
 }));
 

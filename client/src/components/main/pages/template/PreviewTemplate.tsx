@@ -9,7 +9,6 @@ const PreviewText = (props: { previewText: string }) => {
     <>
       {splitLineText.map((text, index) => {
         if (index === splitLineText.length - 1) {
-          // T
           return <Fragment key={"frag" + index}>{text}</Fragment>;
         } else {
           return (

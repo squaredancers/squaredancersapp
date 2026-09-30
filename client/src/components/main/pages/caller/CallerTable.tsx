@@ -151,25 +151,20 @@ class CallerTableClass extends BaseTable<
 
         const getUsers = async () => {
           const users: UserTableType[] = await userServer.getRows();
-          console.log("Users=", users, "Callers", allCallers);
 
           const filteredUsers = users.filter((user) => {
             const someCall = !allCallers.some(
               (caller) => caller.original.userId === user.id,
             );
 
-            console.log("Checking if ", user.id, "already exists ", someCall);
-
             return someCall;
           });
 
           setUsers(filteredUsers);
           setAllUsers(users);
-          console.log("Filtered users=", filteredUsers);
 
           if (editingRow !== null) {
             // Initialize form values when an editing row is set
-            console.log("Edit previous values=", prevValues);
             setValues(prevValues);
           } else {
             setValues({

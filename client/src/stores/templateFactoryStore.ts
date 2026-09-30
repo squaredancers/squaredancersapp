@@ -40,6 +40,7 @@ export interface TemplateStoreState {
   setText: (text: string) => void;
   findId: (id: string) => TreeItemStore | null;
   getPreviewText: (nameValue: { [name: string]: string }) => string[];
+  getTemplateHtml: () => string[];
 
   cloneParentChildItems: () => void;
   createItem: (name: string, nodeType: NodeType) => string | null;
@@ -47,6 +48,7 @@ export interface TemplateStoreState {
     trueBranch: TreeItemStore,
     falseBranch: TreeItemStore,
   ) => void;
+  moveChild: (id: string, moveUp: boolean) => void;
   deleteItem: () => void;
   deleteChildItem: (id: string) => void;
   loadState: (jsonState: JSONTemplateState) => void;
@@ -186,6 +188,29 @@ const templateStoreFactory = (
       falseBranch: TreeItemStore,
     ) => {
       set({ childItems: [trueBranch, falseBranch] });
+    },
+
+    moveChild: (id: string, moveUp: boolean) => {
+      const childItems = [...get().childItems];
+      const index = childItems.findIndex((child) => child.getState().id === id);
+
+      if (
+        index === -1 ||
+        (index === 0 && moveUp) ||
+        (index >= childItems.length - 1 && !moveUp)
+      ) {
+        // Bad index so we will just return
+        return;
+      }
+
+      childItems[index] = childItems.splice(
+        moveUp ? index - 1 : index + 1,
+        1,
+        childItems[index],
+      )[0];
+
+      set({ childItems });
+      get().cloneParentChildItems();
     },
 
     deleteItem: () => {
@@ -333,6 +358,47 @@ const templateStoreFactory = (
       return [];
     },
 
+    getTemplateHtml: (): string[] => {
+      const storeState = get();
+
+      switch (storeState.nodeType) {
+        case NodeType.Text:
+          return [storeState.text ?? ""];
+        case NodeType.Condition: {
+          const [trueStore, falseStore] = storeState.childItems;
+          const fieldName = storeState.fieldName ?? "";
+          const fieldValue = storeState.valueName ?? "";
+          const trueText = trueStore.getState().getTemplateHtml();
+          const falseText = falseStore.getState().getTemplateHtml();
+          const conditionResult: string[] = [
+            `*|IF:${fieldName}=${fieldValue}|*`,
+          ];
+
+          conditionResult.push(...trueText);
+          conditionResult.push(`*|ELSE:|*`);
+          conditionResult.push(...falseText);
+          conditionResult.push(`*|END:IF|*`);
+          return conditionResult;
+          break;
+        }
+        case NodeType.TemplateRoot:
+        case NodeType.TrueBranch:
+        case NodeType.FalseBranch: {
+          // Just recurse to the child nodes
+          const childText: string[] = [];
+          const childStores = storeState.childItems;
+
+          childStores.forEach((childStore) => {
+            childText.push(...childStore.getState().getTemplateHtml());
+          });
+
+          return childText;
+        }
+      }
+
+      return [];
+    },
+
     dumpIds: () => {
       let parent: TreeItemStore | null = get().parent;
       let root = parent;
@@ -341,8 +407,6 @@ const templateStoreFactory = (
         root = parent;
         parent = parent.getState().parent;
       }
-
-      console.log("Found root node:", root?.getState().id);
 
       root?.getState().childItems.forEach((child) => {
         console.log("Found child ", child.getState().id);

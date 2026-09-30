@@ -14,7 +14,6 @@ const useValidationStore = create<ValidationState>((set, get) => ({
   setValidationErrors: (
     validationErrors: Record<string, string | undefined>,
   ) => {
-    console.log("In set validation errors", validationErrors);
     set({ validationErrors });
   },
 }));

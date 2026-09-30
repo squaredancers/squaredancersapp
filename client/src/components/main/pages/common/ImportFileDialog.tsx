@@ -35,7 +35,6 @@ const ImportFileDialog = (props: SimpleDialogProps) => {
 
     const content = await readFileAsync(file);
 
-    //console.log("Setting content to ", content);
     setFileContent(content);
   };
 

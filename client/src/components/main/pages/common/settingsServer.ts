@@ -46,12 +46,10 @@ export class SettingsServerTypeClass extends BaseServer<
       return { ...settings, id: index };
     });
 
-    console.log("Get rows=", newSetingsArray);
     return newSetingsArray;
   }
 
   public async createRow(row: SettingsTableType): Promise<void> {
-    console.log("Create a new template");
     const settings = useSettingsStore.getState().settings;
     const updateSetting = useSettingsStore.getState().updateSetting;
     const jsonString = settings[this.settingName] ?? "[]";

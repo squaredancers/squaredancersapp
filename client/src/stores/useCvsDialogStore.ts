@@ -30,8 +30,6 @@ const useCsvDialogStore = create<DialogStore>((set, get) => ({
       await registrantServer.bulkAddRegistrants(splitContent);
 
     await get().callAfterSave();
-
-    console.log("Bulk add response=", bulkResponse);
   },
 }));
 

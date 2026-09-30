@@ -26,10 +26,7 @@ const useSettingsStore = create<SettingsStore>((set, get) => ({
   loadSettings: async () => {
     const isLoading = get().loading;
 
-    console.log("IN loading settings:", isLoading);
     if (!isLoading) {
-      console.log("Calling server to get the settings");
-
       set({ loading: true });
       const settings = await Server.getSettings();
 

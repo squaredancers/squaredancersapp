@@ -26,7 +26,7 @@ interface DialogStore {
     contentText: string,
     submitText: string,
     dialogData: DataTypeInfo[],
-    saveData: (data: DataTypeInfo[]) => void
+    saveData: (data: DataTypeInfo[]) => void,
   ) => void;
 
   closeDialog: () => void;
@@ -51,9 +51,8 @@ const useFormDialogStore = create<DialogStore>((set, get) => ({
     contentText: string,
     submitText: string,
     dialogData: DataTypeInfo[],
-    saveData: (data: DataTypeInfo[]) => void
+    saveData: (data: DataTypeInfo[]) => void,
   ) => {
-    console.log("In open dialog");
     set({ title, contentText, submitText, dialogData, isOpen: true, saveData });
   },
 
@@ -65,7 +64,7 @@ const useFormDialogStore = create<DialogStore>((set, get) => ({
     const state = get();
     const dialogData = state.dialogData;
     const fieldIndex = dialogData.findIndex(
-      (field) => field.fieldName === fieldName
+      (field) => field.fieldName === fieldName,
     );
     const fieldEntry = fieldIndex === -1 ? undefined : dialogData[fieldIndex];
     const newValidationErrors = { ...state.validationErrors };

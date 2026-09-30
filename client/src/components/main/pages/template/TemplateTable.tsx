@@ -1,4 +1,4 @@
-import { PictureAsPdf } from "@mui/icons-material";
+import EmailIcon from "@mui/icons-material/Email";
 import {
   Box,
   Button,
@@ -91,12 +91,18 @@ class TemplateTableClass extends BaseTable<
   }
 
   public getCustomRowActions(row: MRT_Row<SettingsTableType>): React.FC | null {
-    const handlePDFClick = async () => {};
+    const handleTemplateText = async () => {
+      const rootStoreState = useRootTemplateStore.getState();
+      const stringData = row.original.jsonString;
+
+      rootStoreState.setTemplateDialogJsonString(stringData);
+      rootStoreState.setTemplateDialogOpen(true);
+    };
 
     return () => (
-      <Tooltip title="Show template text">
-        <IconButton onClick={handlePDFClick}>
-          <PictureAsPdf />
+      <Tooltip title="Show template text in dialog">
+        <IconButton onClick={handleTemplateText}>
+          <EmailIcon />
         </IconButton>
       </Tooltip>
     );
