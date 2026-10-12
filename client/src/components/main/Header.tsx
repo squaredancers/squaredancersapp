@@ -1,8 +1,5 @@
 import Stack from "@mui/material/Stack";
-import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
-import CustomDatePicker from "./CustomDatePicker.js";
 import NavbarBreadcrumbs from "./NavbarBreadcrumbs.js";
-import MenuButton from "./MenuButton.js";
 
 const Header = () => {
   return (

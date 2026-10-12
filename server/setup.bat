@@ -7,4 +7,4 @@ if not exist "./dist/public" mkdir "./dist/public"
 call npm run installclient
 call npm run buildclient
 
-echo If the previous command completed successfully, can now start the application by typing "npm start".
+echo If the previous commands completed successfully, you can now start the application by typing "npm start".

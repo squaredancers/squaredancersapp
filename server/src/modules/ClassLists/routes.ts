@@ -10,6 +10,7 @@ const classListsSchema = z.object({
   title: z.string().nonoptional(),
   class: z.number().nonoptional(),
   columns: z.string().nonoptional(),
+  showRowNum: z.boolean().nonoptional(),
 });
 
 export const registerClassListsRoutes = async (app: FastifyInstance) => {

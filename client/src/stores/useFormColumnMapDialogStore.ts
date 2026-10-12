@@ -8,8 +8,8 @@ export const fields = [
   "Email",
   "Phone",
   "Timestamp",
+  "HowWillPay",
   "PaymentType",
-  "RegistrationType",
   "Class",
 ] as const;
 

@@ -101,7 +101,11 @@ export abstract class BaseTable<
     return null;
   }
 
-  public getCustomRowActions(row: MRT_Row<RowTableType>): React.FC | null {
+  public getCustomRowActions(
+    row: MRT_Row<RowTableType>,
+    table: MRT_TableInstance<RowTableType>,
+    refreshRows: () => Promise<void>,
+  ): React.FC | null {
     return null;
   }
 
@@ -275,10 +279,10 @@ export abstract class BaseTable<
       ),
 
       renderRowActions: ({ row, table }) => {
-        const CustomActions = useMemo(() => {
-          return this.getCustomRowActions(row);
-        }, [table]);
         const { mutateAsync: refreshRows } = this.useCustomAction();
+        const CustomActions = useMemo(() => {
+          return this.getCustomRowActions(row, table, refreshRows);
+        }, [table]);
 
         return (
           <Box sx={{ display: "flex", gap: "1rem" }}>
@@ -372,7 +376,7 @@ export abstract class BaseTable<
 
                   usePDFTitleDialogStore
                     .getState()
-                    .setHeadersAndRows(columnNames, rows);
+                    .setHeadersAndRows(columnNames, rows, false);
                   usePDFTitleDialogStore.getState().setOpen(true);
                 }}
               >

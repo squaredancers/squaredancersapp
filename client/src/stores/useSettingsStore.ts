@@ -2,7 +2,7 @@ import { create } from "zustand";
 import Server from "../server/server.js";
 
 export const MAPPING_SETTINGS: string = "mapping_settings";
-
+export const TEMPLATE_SETTINGS: string = "template_settings";
 interface SettingsStore {
   settings: { [key: string]: string };
   loading: boolean;
@@ -20,7 +20,7 @@ const useSettingsStore = create<SettingsStore>((set, get) => ({
 
     set({ settings: newSettings });
 
-    return await Server.updateSetting(MAPPING_SETTINGS, value, false);
+    return await Server.updateSetting(key, value, false);
   },
 
   loadSettings: async () => {
@@ -36,6 +36,10 @@ const useSettingsStore = create<SettingsStore>((set, get) => ({
         settings[MAPPING_SETTINGS] = "[]";
       }
 
+      if (!settings[TEMPLATE_SETTINGS]) {
+        await Server.updateSetting(TEMPLATE_SETTINGS, "[]", true);
+        settings[TEMPLATE_SETTINGS] = "[]";
+      }
       set({ settings, loading: false });
     }
   },

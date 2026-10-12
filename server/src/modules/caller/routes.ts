@@ -49,7 +49,6 @@ export const registerCallerRoutes = async (app: FastifyInstance) => {
       const params = request.params as { id: string };
       const { active } = request.query;
 
-      console.log("Params =", params);
       if (params.id) {
         result = await db.caller.findOneOrFail(+params.id);
       } else {

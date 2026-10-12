@@ -18,6 +18,7 @@ import { BaseTable } from "../common/BaseTable.js";
 import { useEffect, useState } from "react";
 import { JSONTemplateState } from "../../../../stores/templateFactoryStore.js";
 import useRootTemplateStore from "../../../../stores/useRootTemplateStore.js";
+import { TEMPLATE_SETTINGS } from "../../../../stores/useSettingsStore.js";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import {
   SettingsServerType,
@@ -28,12 +29,12 @@ import {
 class TemplateTableClass extends BaseTable<
   SettingsTableType,
   SettingsServerType,
-  SettingsServerTypeClass
+  SettingsServerTypeClass<SettingsTableType, SettingsServerType>
 > {
   public constructor() {
     super(
       "templates",
-      new SettingsServerTypeClass("mapping_settings"),
+      new SettingsServerTypeClass(TEMPLATE_SETTINGS),
       "Template",
       true,
     );

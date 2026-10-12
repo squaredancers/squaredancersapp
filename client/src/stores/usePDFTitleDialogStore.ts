@@ -6,10 +6,15 @@ interface DialogStore {
   headers: { name: string; show: boolean }[];
   title: string;
   rows: string[][];
+  showRowNum: boolean;
 
   setOpen: (isOpen: boolean) => void;
   setTitle: (title: string) => void;
-  setHeadersAndRows: (headerNames: string[], rows: string[][]) => void;
+  setHeadersAndRows: (
+    headerNames: string[],
+    rows: string[][],
+    showRowNum: boolean,
+  ) => void;
   setShowHeader: (index: number, show: boolean) => void;
   setShowAllHeaders: (show: boolean) => void;
   moveHeader: (index: number, moveUp: boolean) => void;
@@ -21,6 +26,7 @@ const usePDFTitleDialogStore = create<DialogStore>((set, get) => ({
   headers: [],
   title: "",
   rows: [],
+  showRowNum: false,
 
   setOpen: (isOpen: boolean) => {
     set({ isOpen });
@@ -65,21 +71,26 @@ const usePDFTitleDialogStore = create<DialogStore>((set, get) => ({
     set({ headers: newHeaders });
   },
 
-  setHeadersAndRows: (headerNames: string[], rows: string[][]) => {
+  setHeadersAndRows: (
+    headerNames: string[],
+    rows: string[][],
+    showRowNum: boolean,
+  ) => {
     set({
       headers: headerNames.map((name) => {
         return { name, show: true };
       }),
       rows,
+      showRowNum,
     });
   },
 
   downloadPdf: async (): Promise<void> => {
-    const { title, rows, headers } = get();
-    const exportColumns: string[] = headers
+    const { title, rows, headers, showRowNum } = get();
+    let exportColumns: string[] = headers
       .filter((header) => header.show)
       .map((header) => header.name);
-    const exportRows: string[][] = rows.map((row) => {
+    let exportRows: string[][] = rows.map((row) => {
       return row.filter((colData, index) => headers[index].show);
     });
 
@@ -87,6 +98,11 @@ const usePDFTitleDialogStore = create<DialogStore>((set, get) => ({
     exportRows.sort((a, b) =>
       a[0].toLowerCase().localeCompare(b[0].toLowerCase()),
     );
+
+    if (showRowNum) {
+      exportColumns = ["Count", ...exportColumns];
+      exportRows = exportRows.map((row, index) => [index + 1 + "", ...row]);
+    }
 
     exportToPdf(title, exportColumns, exportRows);
   },

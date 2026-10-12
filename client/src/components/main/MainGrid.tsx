@@ -12,6 +12,7 @@ import ClassesTable from "./pages/classes/ClassesTable.js";
 import ClassInfoTable from "./pages/classinfo/ClassinfoTable.js";
 import ClassListsTable from "./pages/classLists/ClassListsTable.js";
 import EventTable from "./pages/event/EventTable.js";
+import GoogleMappingsTable from "./pages/googlemappings/GoogleMappingsTable.js";
 import { HomePage } from "./pages/home.js";
 import LocationTable from "./pages/location/LocationTable.js";
 import RegistrantTable from "./pages/registrants/registrantsTable.js";
@@ -50,6 +51,8 @@ const MainGrid = () => {
   const RegistrantPage = RegistrantTable.MainRegistrantTableComponent;
   const ClassListsPage = ClassListsTable.MainClassListsTableComponent;
   const TemplatePage = TemplateTable.MainTemplateTableComponent;
+  const GoogleMappingsPage =
+    GoogleMappingsTable.MainGoogleMappingsTableComponent;
   const editTemplateName = useRootTemplateStore(
     (state) => state.editTemplateName,
   );
@@ -139,6 +142,9 @@ const MainGrid = () => {
         }
       >
         <PreviewTemplate />
+      </Conditional>
+      <Conditional condition={page === Pages.GoogleMappings}>
+        <GoogleMappingsPage />
       </Conditional>
     </Box>
   );

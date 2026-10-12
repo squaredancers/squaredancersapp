@@ -7,6 +7,7 @@ import { useCallback } from "react";
 import useBulkUpdateConfDialogStore from "../../stores/useBulkUpdateConfDialog.js";
 import useCsvDialogStore from "../../stores/useCvsDialogStore.js";
 import ConfirmationDialog from "../common/ConfirmationDialog.js";
+import AttendanceSheetDialog from "../dialogs/AttendanceSheetDialog.js";
 import FormColumnMapDialog from "../dialogs/FormColumnMapDialog.js";
 import MailchimpDialog from "../dialogs/MailchimpDialog.js";
 import PDFTitleDialog from "../dialogs/PDFTitleDialog.js";
@@ -80,6 +81,7 @@ export default function Dashboard(props: {}) {
             />
             <PDFTitleDialog />
             <TemplateDialog />
+            <AttendanceSheetDialog />
             <MainGrid />
           </Stack>
         </Box>

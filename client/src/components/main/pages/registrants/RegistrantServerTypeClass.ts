@@ -1,4 +1,5 @@
 import axios from "axios";
+import useNotificationMessageStore from "../../../../stores/useNotificationMessageStore.js";
 import BaseServer from "../common/baseServer.js";
 import {
   RegistrantServerType,
@@ -90,24 +91,28 @@ export class RegistrantServerTypeClass extends BaseServer<
       if (response.data) {
         result = response.data;
       }
+
+      if (response.data.error !== "") {
+        useNotificationMessageStore.getState().setMessage(response.data.error);
+      }
     } catch (exc) {}
 
     return result;
   }
 
-  async bulkUpdateConfSent(registrantIds: number[]): Promise<boolean> {
+  async bulkUpdateConfSent(registrantIds: number[]): Promise<string | null> {
     const requestConfig = this.getConfig(
       "POST",
       "/api/registrant/bulkUpdateConf",
       JSON.stringify(registrantIds),
     );
-    let result: boolean = false;
+    let result: string | null = null;
 
     try {
-      const response: { data: boolean } = await axios(requestConfig);
+      const response: { data: { error: string } } = await axios(requestConfig);
 
       if (response.data) {
-        result = response.data;
+        result = response.data?.error ?? null;
       }
     } catch (exc) {}
 

@@ -37,7 +37,7 @@ const getActiveClass = (
   for (let index = 0; index < classKeys.length; index++) {
     const classKey = classKeys[index];
 
-    if (googleFormsName.startsWith(classKey)) {
+    if (classKey !== "" && googleFormsName.startsWith(classKey)) {
       return classMap[classKey];
     }
   }
@@ -176,23 +176,65 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
         return responseMessage;
       }
 
-      let parsedMappings: string[] = [];
+      let colMappings: {
+        [colNum: number]: {
+          field: string;
+          startsWith: string;
+          useColValue: boolean;
+          value: string;
+        }[];
+      } = {};
+      let maxCol: number = 0;
+
       try {
-        parsedMappings = JSON.parse(mappings.value);
-      } catch {}
+        const parsedMappings: {
+          name: string;
+          jsonString: string;
+        }[] = JSON.parse(mappings.value);
+
+        parsedMappings.forEach((mapping) => {
+          const mappingEntry: {
+            columnNum: number;
+            field: string;
+            startsWith: string;
+            useColValue: boolean;
+            value: string;
+          } = JSON.parse(mapping.jsonString);
+
+          let colMappingsArray = colMappings[mappingEntry.columnNum];
+
+          if (!colMappingsArray) {
+            colMappingsArray = [];
+            colMappings[mappingEntry.columnNum] = colMappingsArray;
+          }
+
+          colMappingsArray.push({
+            field: mappingEntry.field,
+            startsWith: mappingEntry.startsWith,
+            useColValue: mappingEntry.useColValue,
+            value: mappingEntry.value,
+          });
+
+          if (mappingEntry.columnNum > maxCol) {
+            maxCol = mappingEntry.columnNum;
+          }
+        });
+      } catch (exc) {
+        console.log(exc);
+      }
 
       let allColumnsMatch = true;
       let registrantsColumns = 0;
 
       parsedRegistrants.forEach((registrant, index) => {
-        if (registrant.length !== parsedMappings.length) {
+        if (registrant.length !== maxCol) {
           registrantsColumns = registrant.length;
           allColumnsMatch = false;
         }
       });
 
       if (!allColumnsMatch) {
-        responseMessage.error = `Registrant columns=${registrantsColumns}, Mapping columns=${parsedMappings.length}.  They must match.`;
+        responseMessage.error = `Registrant columns=${registrantsColumns}, Mapping columns=${maxCol}.  They must match.`;
         return responseMessage;
       }
 
@@ -200,19 +242,6 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
       activeClasses.forEach((aClass) => {
         activeClassesMap[aClass.googleFormsName] = aClass;
       });
-
-      const newMemberClass = activeClassesMap["mainstream"];
-      const memberOnlyClass = activeClassesMap["memberonly"];
-
-      if (!newMemberClass) {
-        responseMessage.error = "No mainstream class defined.";
-        return responseMessage;
-      }
-
-      if (!memberOnlyClass) {
-        responseMessage.error = "No memmber only class defined";
-        return responseMessage;
-      }
 
       // Note.  The first line in the csv registrants file is a header so it must be skipped.
       //        As well, if there are duplicate emails in the registrants file we only want to
@@ -225,7 +254,8 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
           email: string;
           phone: string;
           howWillPaymentBeMade: string;
-          classChosen: Class;
+          paymentType: string;
+          classChosen: Class | null;
         };
       } = {};
 
@@ -239,68 +269,74 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
           let email: string = "";
           let phone: string = "";
           let howWillPaymentBeMade: string = "";
-          let classChosen: Class | null = null;
           let classGoogleName: string = "";
+          let paymentType: string = "";
+          let classChosen: Class | null = null;
+          const colKeys = Object.keys(colMappings);
 
-          parsedMappings.forEach((mapping, mapIndex) => {
-            switch (mapping) {
-              case "Firstname": {
-                firstName = registrant[mapIndex];
-                break;
-              }
-              case "Lastname": {
-                lastName = registrant[mapIndex];
-                break;
-              }
-              case "Email": {
-                email = registrant[mapIndex];
-                break;
-              }
-              case "Phone": {
-                phone = registrant[mapIndex];
-                break;
-              }
-              case "Timestamp": {
-                timestamp = registrant[mapIndex];
-                break;
-              }
-              case "RegistrationType": {
-                const registrationType = registrant[mapIndex].toLowerCase();
+          colKeys.forEach((mappingId) => {
+            const colEntryIndex = parseInt(mappingId);
+            const colEntries = colMappings[colEntryIndex];
 
-                if (registrationType.startsWith("new members")) {
-                  classChosen = newMemberClass;
-                } else if (registrationType.startsWith("returning members")) {
-                  // Do nothing class is defined in the class field.
-                } else if (registrationType.startsWith("pay $30")) {
-                  classChosen = memberOnlyClass;
+            colEntries.forEach((colEntry) => {
+              const field = colEntry.field;
+              const startsWith = colEntry.startsWith.toLowerCase();
+              const value = colEntry.value;
+
+              switch (field) {
+                case "Firstname": {
+                  firstName = registrant[colEntryIndex - 1];
+                  break;
                 }
-
-                break;
-              }
-              case "Class": {
-                classGoogleName = registrant[mapIndex]?.toLowerCase();
-
-                if (classGoogleName !== "") {
-                  classChosen = getActiveClass(
-                    classGoogleName,
-                    activeClassesMap,
-                  );
+                case "Lastname": {
+                  lastName = registrant[colEntryIndex - 1];
+                  break;
                 }
-                break;
-              }
-              case "PaymentType": {
-                const howPaying = registrant[mapIndex].toLowerCase();
-
-                if (howPaying.startsWith("e-transfer")) {
-                  howWillPaymentBeMade = "etransfer";
-                } else if (howPaying.startsWith("cash")) {
-                  howWillPaymentBeMade = "cash";
-                } else if (howPaying.startsWith("credit card")) {
-                  howWillPaymentBeMade = "creditcard";
+                case "Email": {
+                  email = registrant[colEntryIndex - 1];
+                  break;
                 }
-                break;
+                case "Phone": {
+                  phone = registrant[colEntryIndex - 1];
+                  break;
+                }
+                case "Timestamp": {
+                  timestamp = registrant[colEntryIndex - 1];
+                  break;
+                }
+                case "Class": {
+                  classGoogleName =
+                    registrant[colEntryIndex - 1]?.toLowerCase();
+
+                  if (classGoogleName !== "") {
+                    classChosen = getActiveClass(
+                      classGoogleName,
+                      activeClassesMap,
+                    );
+                  }
+
+                  break;
+                }
+                case "HowWillPay": {
+                  const howPaying = registrant[colEntryIndex - 1].toLowerCase();
+
+                  if (howPaying.startsWith(startsWith)) {
+                    howWillPaymentBeMade = value;
+                  }
+
+                  break;
+                }
+                case "PaymentType": {
+                  const payType = registrant[colEntryIndex - 1].toLowerCase();
+
+                  if (payType.startsWith(startsWith)) {
+                    paymentType = value;
+                  }
+
+                  break;
+                }
               }
-            }
+            });
           });
 
           const timestampDate = parseCsvTimestamp(timestamp);
@@ -310,9 +346,15 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
           }
 
           if (!classChosen) {
-            return [
-              `Class not chosen for ${firstName} ${lastName}: ${classGoogleName} ${timestamp}.`,
-            ];
+            responseMessage.error = `Class not chosen for ${firstName} ${lastName}: ${classGoogleName} ${timestamp}.`;
+          }
+
+          if (howWillPaymentBeMade === "") {
+            responseMessage.error = `Invalid how to pay string for ${firstName} ${lastName}: ${classGoogleName} ${timestamp}.`;
+          }
+
+          if (paymentType === "") {
+            responseMessage.error = `Invalid payment type string for ${firstName} ${lastName}: ${classGoogleName} ${timestamp}.`;
           }
 
           const existingEntry = registrantsMap[email];
@@ -323,6 +365,7 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
             phone,
             email,
             howWillPaymentBeMade,
+            paymentType,
             classChosen,
           };
 
@@ -348,6 +391,10 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
           }
         }
       });
+
+      if (responseMessage.error !== "") {
+        return responseMessage;
+      }
 
       // We now have a registrant map that contains all the duplicate entries removed.
       // These entries may have beem added into the database already so we meed to add
@@ -434,15 +481,17 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
           }
 
           // At this point the id for the user should be set.
-          const newRegistrant = db.classRegistrant.create({
-            user: user.id,
-            class: entry.classChosen.id,
-            paymentType: "session",
-            howWillPaymentBeMade: entry.howWillPaymentBeMade,
-            paidSession: false,
-            dateRegistered: entry.timestampDate,
-            confirmationSent: false,
-          });
+          if (entry.classChosen !== null) {
+            db.classRegistrant.create({
+              user: user.id,
+              class: entry.classChosen.id,
+              paymentType: entry.paymentType,
+              howWillPaymentBeMade: entry.howWillPaymentBeMade,
+              paidSession: false,
+              dateRegistered: entry.timestampDate,
+              confirmationSent: false,
+            });
+          }
         }
       }
 

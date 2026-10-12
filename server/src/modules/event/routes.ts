@@ -215,12 +215,15 @@ export const registerEventRoutes = async (app: FastifyInstance) => {
     );
 
     activeClasses.forEach((clazz) => {
+      // We don't want to populate classes that have no
+      // classInfo associated with them.
+      if (clazz.classInfo === null) return;
+
       const classDayOfWeek = dayMap[clazz.classInfo.day];
       const currentDate = findStartDate(startDate, classDayOfWeek);
       const classId = clazz.id;
 
       while (currentDate < endDate) {
-        console.log("Curr date", currentDate, "endDate", endDate);
         const eventKey =
           currentDate.toISOString().substring(0, 10) + "-" + classId;
 

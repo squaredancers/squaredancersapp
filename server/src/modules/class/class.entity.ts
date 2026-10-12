@@ -11,8 +11,8 @@ import { BaseEntity } from "../common/base.entity.js";
 
 @Entity()
 export class Class extends BaseEntity {
-  @ManyToOne(() => ClassInfo)
-  classInfo!: ClassInfo;
+  @ManyToOne(() => ClassInfo, { nullable: true })
+  classInfo: ClassInfo | null = null;
 
   @Property()
   name!: string;

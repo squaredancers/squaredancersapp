@@ -7,7 +7,7 @@ import { RolesType } from "../role/roleType.js";
 import { Class } from "./class.entity.js";
 
 const classSchema = z.object({
-  classInfo: z.number().nonoptional(),
+  classInfo: z.nullable(z.number()).nonoptional(),
   name: z.string().nonoptional(),
   active: z.boolean().nonoptional(),
   googleFormsName: z.string().nonoptional(),

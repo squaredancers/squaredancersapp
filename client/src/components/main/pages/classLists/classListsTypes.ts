@@ -4,6 +4,7 @@ export interface ClassListsServerType {
   id: number;
   title: string;
   columns: string;
+  showRowNum: boolean;
   class:
     | {
         id: number;

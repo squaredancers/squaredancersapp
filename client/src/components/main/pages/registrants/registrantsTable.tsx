@@ -1,7 +1,6 @@
 import CheckIcon from "@mui/icons-material/Check";
 import ImportExportIcon from "@mui/icons-material/ImportExport";
 import MailIcon from "@mui/icons-material/Mail";
-import SettingsIcon from "@mui/icons-material/Settings";
 import {
   Box,
   Button,
@@ -29,7 +28,6 @@ import {
 import { useEffect, useState } from "react";
 import useBulkUpdateConfDialogStore from "../../../../stores/useBulkUpdateConfDialog.js";
 import useCsvDialogStore from "../../../../stores/useCvsDialogStore.js";
-import useFormColumnMapDialogStore from "../../../../stores/useFormColumnMapDialogStore.js";
 import useMailchimpDialogStore from "../../../../stores/useMailchimpDialogStore.js";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import Conditional from "../../../common/Conditional.js";
@@ -143,22 +141,6 @@ const CustomBulkUpdateButton = (props: {
   );
 };
 
-const CustomGearButton = () => {
-  const openDialog = useFormColumnMapDialogStore((state) => state.openDialog);
-
-  return (
-    <Tooltip title="Define google forms mappings">
-      <IconButton
-        onClick={() => {
-          openDialog();
-        }}
-      >
-        <SettingsIcon />
-      </IconButton>
-    </Tooltip>
-  );
-};
-
 class RegistrantTableClass extends BaseTable<
   RegistrantTableType,
   RegistrantServerType,
@@ -180,7 +162,6 @@ class RegistrantTableClass extends BaseTable<
           <CustomImportButton refreshTable={refreshRows} />
           <MailchimpExportButton rows={rows} />
           <CustomBulkUpdateButton refreshTable={refreshRows} rows={rows} />
-          <CustomGearButton />
         </>
       );
     };

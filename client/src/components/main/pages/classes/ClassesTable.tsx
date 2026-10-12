@@ -24,7 +24,7 @@ import { useEffect, useMemo, useState } from "react";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import Conditional from "../../../common/Conditional.js";
 import { ClassInfoServerTypeClass } from "../classinfo/ClassinfoTable.js";
-import { ClassInfoTableType } from "../classinfo/classInfoTypes.js";
+import { ClassInfoTableType, DaysType } from "../classinfo/classInfoTypes.js";
 import { BaseTable } from "../common/BaseTable.js";
 import BaseServer from "../common/baseServer.js";
 import ValidationUtils from "../common/validationUtils.js";
@@ -53,7 +53,7 @@ export class ClassesServerTypeClass extends BaseServer<
     return {
       id,
       name,
-      classInfo: classInfoId,
+      classInfo: classInfoId === 0 ? null : classInfoId,
       active,
       googleFormsName,
       mailChimpName,
@@ -65,8 +65,8 @@ export class ClassesServerTypeClass extends BaseServer<
   public mapServerToTable(classes: ClassesServerType): ClassesTableType {
     const classInfo = classes.classInfo as {
       name: string;
-      id: number;
-    };
+      id: number | null;
+    } | null;
 
     return {
       id: classes.id,
@@ -75,8 +75,8 @@ export class ClassesServerTypeClass extends BaseServer<
       googleFormsName: classes.googleFormsName,
       mailChimpName: classes.mailChimpName,
       mailChimpClassType: classes.mailChimpClassType,
-      classInfoId: classInfo.id,
-      classInfoName: classInfo.name,
+      classInfoId: classInfo?.id ?? 0,
+      classInfoName: classInfo?.name ?? "No classes",
       registrants: classes.registrants,
     };
   }
@@ -104,7 +104,6 @@ export class ClassesTableClass extends BaseTable<
       name: !ValidationUtils.validateRequired(classes.name)
         ? "Name is required"
         : "",
-      classInfoId: classes.classInfoId === 0 ? "No class info selected" : "",
     };
   }
 
@@ -188,9 +187,22 @@ export class ClassesTableClass extends BaseTable<
         const classInfoServer = new ClassInfoServerTypeClass();
 
         const getAllClassInfo = async () => {
-          const allClassInfo: ClassInfoTableType[] =
+          let allClassInfo: ClassInfoTableType[] =
             await classInfoServer.getRows();
+          const noClass: ClassInfoTableType = {
+            id: 0,
+            name: "No classes",
+            day: DaysType.Monday,
+            googleFormsName: "",
+            mailChimpClassType: "",
+            hours: "0",
+            callerId: 0,
+            callerName: "",
+            locationId: 0,
+            locationName: "",
+          };
 
+          allClassInfo = [noClass, ...allClassInfo];
           setAllClassInfo(allClassInfo);
 
           if (editingRow !== null) {

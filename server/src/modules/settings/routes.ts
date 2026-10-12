@@ -32,12 +32,6 @@ export const registerSettingsRoutes = async (app: FastifyInstance) => {
       name: settingsObject.name,
     });
 
-    console.log(
-      "In create setting=",
-      settingsObject,
-      "existing=",
-      existingSettingValue,
-    );
     if (existingSettingValue) {
       // There is an existing value for this setting so we will not create a new one.
       return { success: false };
@@ -57,7 +51,6 @@ export const registerSettingsRoutes = async (app: FastifyInstance) => {
       name: settingsObject.name,
     });
 
-    console.log("Found setting,", newSettingValue);
     wrap(newSettingValue).assign(settingsObject);
 
     await db.em.flush();

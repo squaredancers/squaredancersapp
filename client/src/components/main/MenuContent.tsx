@@ -29,6 +29,7 @@ const mainListItems = [
   { text: Pages.ClassLists, icon: <ChecklistRtlIcon /> },
   { text: Pages.Reports, icon: <SummarizeIcon /> },
   { text: Pages.MailTemplate, icon: <MailIcon /> },
+  { text: Pages.GoogleMappings, icon: <MailIcon /> },
 ];
 
 const secondaryListItems = [

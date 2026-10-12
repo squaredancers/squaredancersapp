@@ -83,8 +83,6 @@ export async function bootstrap(port = 3001) {
   });
 
   app.addHook("onRequest", async (request, reply) => {
-    console.log("In on request headers=", request.headers);
-
     // There wont be a token for the login path
     let routerPath = request.routeOptions.url ?? "";
 

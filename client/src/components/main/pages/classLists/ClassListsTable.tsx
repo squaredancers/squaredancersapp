@@ -1,10 +1,14 @@
 import { ArrowDownward, ArrowUpward, PictureAsPdf } from "@mui/icons-material";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import {
   Box,
   Button,
   Checkbox,
+  Chip,
   Dialog,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   FormHelperText,
   IconButton,
   InputLabel,
@@ -29,6 +33,7 @@ import {
   type MRT_ColumnDef,
 } from "material-react-table";
 import { useEffect, useMemo, useState } from "react";
+import useAttendanceDialogStore from "../../../../stores/useAttendanceDialogStore.js";
 import usePDFTitleDialogStore from "../../../../stores/usePDFTitleDialogStore.js";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import Conditional from "../../../common/Conditional.js";
@@ -107,6 +112,7 @@ class ClassListsTableClass extends BaseTable<
       classId: 0,
       title: "",
       className: "",
+      showRowNum: false,
       columns: reportFields.map((field) => field.fieldName).join(","),
       class: { id: 0, name: "" },
     };
@@ -126,8 +132,17 @@ class ClassListsTableClass extends BaseTable<
       },
       {
         accessorKey: "columns",
-        header: "columns",
+        header: "Columns",
         enableEditing: false,
+      },
+      {
+        accessorKey: "showRowNum",
+        header: "Show row num",
+        Cell: ({ cell }) => {
+          const value = cell.getValue<boolean>();
+
+          return <Chip label={value ? "True" : "False"} size="small" />;
+        },
       },
     ];
   }
@@ -148,6 +163,7 @@ class ClassListsTableClass extends BaseTable<
       const formattedDate = date.toLocaleDateString("en-US", options);
       const pdfState = usePDFTitleDialogStore.getState();
       const columns = row.original.columns.split(",");
+      const showRowNum = row.original.showRowNum;
       const title = `${row.original.title} as of ${formattedDate}`;
       const classId = row.original.classId;
       const classServer = new ClassesServerTypeClass();
@@ -164,16 +180,40 @@ class ClassListsTableClass extends BaseTable<
         }) ?? [];
 
       pdfState.setTitle(title);
-      pdfState.setHeadersAndRows(columns, rows);
+      pdfState.setHeadersAndRows(columns, rows, showRowNum);
       await pdfState.downloadPdf();
     };
 
+    const handlePDFAttendance = async () => {
+      const title = `${row.original.title} for attendance`;
+      const classId = row.original.classId;
+      const classServer = new ClassesServerTypeClass();
+      const classData = await classServer.getRow(classId);
+      const names =
+        classData?.registrants.map((registrant) => {
+          const firstName = registrant.user.firstName;
+          const lastName = registrant.user.lastName;
+          const fullName = `${firstName} ${lastName}`;
+
+          return fullName;
+        }) ?? [];
+      useAttendanceDialogStore.getState().setNames(names, title);
+      useAttendanceDialogStore.getState().setOpen(true);
+    };
+
     return () => (
-      <Tooltip title="Export PDF">
-        <IconButton onClick={handlePDFClick}>
-          <PictureAsPdf />
-        </IconButton>
-      </Tooltip>
+      <>
+        <Tooltip title="Export PDF">
+          <IconButton onClick={handlePDFClick}>
+            <PictureAsPdf />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="PDF Attendance">
+          <IconButton onClick={handlePDFAttendance}>
+            <CalendarMonthIcon />
+          </IconButton>
+        </Tooltip>
+      </>
     );
   }
 
@@ -254,7 +294,7 @@ class ClassListsTableClass extends BaseTable<
               }
             });
 
-            setHeadersAndRows(allColumns, []);
+            setHeadersAndRows(allColumns, [], false);
 
             // Set the selection state
             fieldHeaders.forEach((header, index) => {
@@ -263,7 +303,7 @@ class ClassListsTableClass extends BaseTable<
 
             setValues(prevValues);
           } else {
-            setHeadersAndRows(fieldHeaders, []);
+            setHeadersAndRows(fieldHeaders, [], false);
             setValues(this.defaultCreateRow());
           }
         };
@@ -382,7 +422,23 @@ class ClassListsTableClass extends BaseTable<
                 </FormHelperText>
               </Conditional>
             </FormControl>
-
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={values?.showRowNum}
+                    onChange={(event) => {
+                      setValues({
+                        ...values!,
+                        showRowNum: event.target.checked,
+                      });
+                    }}
+                    color="primary"
+                  />
+                }
+                label="Show row num"
+              />
+            </FormGroup>
             <TableContainer component={Paper}>
               <Table>
                 <TableHead>

@@ -27,7 +27,7 @@ export const registerReportRoutes = async (app: FastifyInstance) => {
 
     startDate.setHours(0, 0, 0, 0);
     endDate.setDate(endDate.getDate() + 1);
-    console.log("start/end=", startDate, endDate);
+
     const events = await db.em.find(
       Event,
       {

@@ -24,12 +24,13 @@ const useCsvDialogStore = create<DialogStore>((set, get) => ({
   },
 
   setFileContent: async (content: string) => {
-    const splitContent = content.split("\n");
-    const registrantServer = new RegistrantServerTypeClass();
-    const bulkResponse =
-      await registrantServer.bulkAddRegistrants(splitContent);
+    if (content !== "") {
+      const splitContent = content.split("\n");
+      const registrantServer = new RegistrantServerTypeClass();
 
-    await get().callAfterSave();
+      await registrantServer.bulkAddRegistrants(splitContent);
+      await get().callAfterSave();
+    }
   },
 }));
 

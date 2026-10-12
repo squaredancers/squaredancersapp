@@ -12,6 +12,7 @@ export enum Pages {
   Reports = "Reports",
   ClassLists = "ClassLists",
   MailTemplate = "MailTemplate",
+  GoogleMappings = "GoogleMappings",
 }
 
 interface PageInfo {

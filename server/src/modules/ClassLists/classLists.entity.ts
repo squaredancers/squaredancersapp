@@ -13,4 +13,7 @@ export class ClassLists extends BaseEntity {
   // This contains the registrant columns to be used in the list.
   @Property()
   columns!: string;
+
+  @Property({ default: true })
+  showRowNum!: boolean;
 }

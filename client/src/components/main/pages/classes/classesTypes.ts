@@ -13,7 +13,7 @@ export interface RegistrantType {
 export interface ClassesServerType {
   id: number;
   name: string;
-  classInfo: { id: number; name: string } | number;
+  classInfo: { id: number; name: string } | number | null;
   active: boolean;
   googleFormsName: string;
   mailChimpName: string;
