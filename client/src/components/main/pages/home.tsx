@@ -23,8 +23,8 @@ export const HomePage = () => {
         </li>
         <li>Track how much should be paid for all of your callers.</li>
         <li>
-          Track the different class.(ie. mainstream, plus, Advanced, and
-          Challenge. )
+          Track the different dance classes that you have.(ie. mainstream, plus,
+          advanced, and challenge. )
         </li>
         <li>
           Track the students that have registered for each class. Students can
