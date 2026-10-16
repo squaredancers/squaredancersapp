@@ -2,11 +2,11 @@ import { create } from "zustand";
 
 interface AttendanceStore {
   open: boolean;
-  names: string[];
+  names: string[][];
   className: string;
 
   setOpen: (open: boolean) => void;
-  setNames: (names: string[], className: string) => void;
+  setNames: (names: string[][], className: string) => void;
 }
 
 const useAttendanceDialogStore = create<AttendanceStore>((set, get) => ({
@@ -18,7 +18,7 @@ const useAttendanceDialogStore = create<AttendanceStore>((set, get) => ({
     set({ open });
   },
 
-  setNames: (names: string[], className: string) => {
+  setNames: (names: string[][], className: string) => {
     set({ names, className });
   },
 }));

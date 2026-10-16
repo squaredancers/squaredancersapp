@@ -1,10 +1,10 @@
-import { FastifyInstance } from "fastify";
-import { initORM } from "../../db.js";
 import { wrap } from "@mikro-orm/core";
-import { User } from "./user.entity.js";
-import { RolesType } from "../role/roleType.js";
-import { verifyRole } from "../common/roleUtils.js";
+import { FastifyInstance } from "fastify";
 import z from "zod";
+import { initORM } from "../../db.js";
+import { verifyRole } from "../common/roleUtils.js";
+import { RolesType } from "../role/roleType.js";
+import { User } from "./user.entity.js";
 
 const userSchema = z.object({
   firstName: z.string().nonoptional(),
@@ -50,7 +50,6 @@ export const registerUserRoutes = async (app: FastifyInstance) => {
 
     delete result.password;
 
-    console.log("Get result:", result);
     return result;
   });
 
@@ -119,9 +118,7 @@ export const registerUserRoutes = async (app: FastifyInstance) => {
     );
 
     try {
-      console.log("Before wrap");
       wrap(userRecord).assign(userWithRole);
-      console.log("After wrap");
     } catch (exc) {
       console.log(exc);
     }

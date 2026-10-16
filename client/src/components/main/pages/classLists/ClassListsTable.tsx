@@ -189,13 +189,12 @@ class ClassListsTableClass extends BaseTable<
       const classId = row.original.classId;
       const classServer = new ClassesServerTypeClass();
       const classData = await classServer.getRow(classId);
-      const names =
+      const names: string[][] =
         classData?.registrants.map((registrant) => {
           const firstName = registrant.user.firstName;
           const lastName = registrant.user.lastName;
-          const fullName = `${firstName} ${lastName}`;
 
-          return fullName;
+          return [lastName, firstName];
         }) ?? [];
       useAttendanceDialogStore.getState().setNames(names, title);
       useAttendanceDialogStore.getState().setOpen(true);
