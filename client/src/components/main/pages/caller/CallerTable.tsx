@@ -23,7 +23,7 @@ import { BaseTable } from "../common/BaseTable.js";
 import BaseServer from "../common/baseServer.js";
 import ValidationUtils from "../common/validationUtils.js";
 import { UserServerTypeClass } from "../user/UsersTable.js";
-import { UserTableType } from "../user/userTypes.js";
+import { sortByName, UserTableType } from "../user/userTypes.js";
 import { CallerServerType, CallerTableType } from "./callerTypes.js";
 
 export class CallerServerTypeClass extends BaseServer<
@@ -152,14 +152,17 @@ class CallerTableClass extends BaseTable<
         const getUsers = async () => {
           const users: UserTableType[] = await userServer.getRows();
 
-          const filteredUsers = users.filter((user) => {
-            const someCall = !allCallers.some(
-              (caller) => caller.original.userId === user.id,
-            );
+          const filteredUsers = users
+            .filter((user) => {
+              const someCall = !allCallers.some(
+                (caller) => caller.original.userId === user.id,
+              );
 
-            return someCall;
-          });
+              return someCall;
+            })
+            .filter((user) => user.active);
 
+          sortByName(filteredUsers);
           setUsers(filteredUsers);
           setAllUsers(users);
 

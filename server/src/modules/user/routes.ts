@@ -13,6 +13,7 @@ const userSchema = z.object({
   email: z.string().nonoptional(),
   password: z.string().optional(),
   roles: z.string().nullable(),
+  active: z.boolean().nonoptional(),
 });
 
 const loginSchema = z.object({

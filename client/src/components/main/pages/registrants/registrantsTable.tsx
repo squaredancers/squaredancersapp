@@ -36,7 +36,7 @@ import { ClassesTableType } from "../classes/classesTypes.js";
 import { BaseTable } from "../common/BaseTable.js";
 import ValidationUtils from "../common/validationUtils.js";
 import { UserServerTypeClass } from "../user/UsersTable.js";
-import { UserTableType } from "../user/userTypes.js";
+import { sortByName, UserTableType } from "../user/userTypes.js";
 import { RegistrantServerTypeClass } from "./RegistrantServerTypeClass.js";
 import {
   RegistrantServerType,
@@ -334,8 +334,10 @@ class RegistrantTableClass extends BaseTable<
         const getUsers = async () => {
           const users: UserTableType[] = await userServer.getRows();
           const classes: ClassesTableType[] = await classesServer.getRows();
+          const filteredUsers = users.filter((user) => user.active);
 
-          setUsers(users);
+          sortByName(filteredUsers);
+          setUsers(filteredUsers);
           setClasses(classes);
 
           if (editingRow !== null) {
