@@ -21,7 +21,9 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import {
+  MRT_ColumnFiltersState,
   MRT_EditActionButtons,
+  MRT_PaginationState,
   MRT_ShowHideColumnsButton,
   MRT_TableInstance,
   MRT_ToggleDensePaddingButton,
@@ -36,7 +38,7 @@ import {
   type MRT_Row,
   type MRT_TableOptions,
 } from "material-react-table";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import usePDFTitleDialogStore from "../../../../stores/usePDFTitleDialogStore.js";
 import useValidationStore from "../../../../stores/useValidationStore.js";
 import StringUtils from "../../../../utils/stringUtils.js";
@@ -134,9 +136,6 @@ export abstract class BaseTable<
 
   TableComponent = (props: {}) => {
     const capitalRowName = StringUtils.capitalizeFirstLetter(this.rowName);
-    const validationErrors = useValidationStore(
-      (state) => state.validationErrors,
-    );
     const setValidationErrors = useValidationStore(
       (state) => state.setValidationErrors,
     );
@@ -201,6 +200,43 @@ export abstract class BaseTable<
       setRowToDelete(row.original);
     };
 
+    const [pagination, setPagination] = useState<MRT_PaginationState>(() => {
+      const saved = localStorage.getItem(this.queryKey + "mrt_pagination");
+      return saved ? JSON.parse(saved) : { pageIndex: 0, pageSize: 10 };
+    });
+
+    const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
+      () => {
+        const saved = localStorage.getItem(this.queryKey + "mrt_filters");
+        return saved ? JSON.parse(saved) : [];
+      },
+    );
+
+    const [showColumnFilters, setShowColumnFilters] = useState<boolean>(() => {
+      const saved = localStorage.getItem(this.queryKey + "mrt_show_filters");
+      return saved ? JSON.parse(saved) : false;
+    });
+    useEffect(() => {
+      localStorage.setItem(
+        this.queryKey + "mrt_pagination",
+        JSON.stringify(pagination),
+      );
+    }, [pagination]);
+
+    useEffect(() => {
+      localStorage.setItem(
+        this.queryKey + "mrt_filters",
+        JSON.stringify(columnFilters),
+      );
+    }, [columnFilters]);
+
+    useEffect(() => {
+      localStorage.setItem(
+        this.queryKey + "mrt_show_filters",
+        JSON.stringify(showColumnFilters),
+      );
+    }, [showColumnFilters]);
+
     const table = useMaterialReactTable({
       columns,
       data: fetchedRowType,
@@ -213,6 +249,18 @@ export abstract class BaseTable<
         columnVisibility: this.getColumnVisibility(),
         density: "compact",
       },
+      state: {
+        pagination,
+        columnFilters,
+        showColumnFilters,
+        isLoading: isLoadingRowTypes,
+        isSaving: isCreatingRowType || isUpdatingRowType || isDeletingRowType,
+        showAlertBanner: isLoadingRowTypeError,
+        showProgressBars: isFetchingRowTypes,
+      },
+      onPaginationChange: setPagination,
+      onColumnFiltersChange: setColumnFilters,
+      onShowColumnFiltersChange: setShowColumnFilters,
       muiEditRowDialogProps: ({ table, row }) => ({
         open: !!table.getState().editingRow, // Ensure this is present
         onClose: () => table.setEditingRow(null),
@@ -389,12 +437,6 @@ export abstract class BaseTable<
             <MRT_ToggleFullScreenButton table={table} />
           </>
         );
-      },
-      state: {
-        isLoading: isLoadingRowTypes,
-        isSaving: isCreatingRowType || isUpdatingRowType || isDeletingRowType,
-        showAlertBanner: isLoadingRowTypeError,
-        showProgressBars: isFetchingRowTypes,
       },
     });
 
