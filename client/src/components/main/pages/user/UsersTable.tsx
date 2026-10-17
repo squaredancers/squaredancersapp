@@ -5,6 +5,8 @@ import {
   Chip,
   Dialog,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -38,7 +40,8 @@ export class UserServerTypeClass extends BaseServer<
   }
 
   public mapTableToServer(user: UserTableType): UserServerType {
-    const { id, firstName, lastName, phone, email, roles, password } = user;
+    const { id, firstName, lastName, phone, email, roles, password, active } =
+      user;
 
     return {
       id,
@@ -48,11 +51,12 @@ export class UserServerTypeClass extends BaseServer<
       email,
       password,
       roles: roles.length === 0 ? null : roles.join(","),
+      active,
     };
   }
 
   public mapServerToTable(user: UserServerType): UserTableType {
-    const { id, firstName, lastName, phone, email, roles } = user;
+    const { id, firstName, lastName, phone, email, roles, active } = user;
     return {
       id,
       firstName,
@@ -61,6 +65,7 @@ export class UserServerTypeClass extends BaseServer<
       email,
       password: "1234",
       roles: roles?.split(",") ?? [],
+      active,
     };
   }
 }
@@ -98,6 +103,15 @@ class UserTableClass extends BaseTable<
 
   public getColumns(): MRT_ColumnDef<UserTableType, unknown>[] {
     return [
+      {
+        accessorKey: "active",
+        header: "Active",
+        Cell: ({ cell }) => {
+          const value = cell.getValue<boolean>();
+
+          return <Chip label={value ? "True" : "False"} size="small" />;
+        },
+      },
       {
         accessorKey: "firstName",
         header: "First Name",
@@ -165,6 +179,7 @@ class UserTableClass extends BaseTable<
               email: "",
               password: "",
               roles: [],
+              active: true,
             });
           }
         };
@@ -213,6 +228,23 @@ class UserTableClass extends BaseTable<
               {`${creatingRow !== null ? "Create" : "Edit"} ${this.rowName} row`}
             </h3>
 
+            <FormGroup>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={values?.active}
+                    onChange={(event) => {
+                      setValues({
+                        ...values!,
+                        active: event.target.checked,
+                      });
+                    }}
+                    color="primary"
+                  />
+                }
+                label="Active?"
+              />
+            </FormGroup>
             <TextField
               label="First name"
               name="firstName"

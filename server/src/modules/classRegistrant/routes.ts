@@ -473,6 +473,7 @@ export const registerClassRegistrantRoutes = async (app: FastifyInstance) => {
               entry.phone,
               "",
               "",
+              true,
             );
             await fork.persist(user).flush();
             newUsersAdded.push(

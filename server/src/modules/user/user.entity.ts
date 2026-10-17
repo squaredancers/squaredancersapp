@@ -1,12 +1,12 @@
 import {
-  Entity,
-  Property,
   BeforeCreate,
   BeforeUpdate,
+  Entity,
   EventArgs,
+  Property,
 } from "@mikro-orm/core";
+import { hash, verify } from "argon2";
 import { BaseEntity } from "../common/base.entity.js";
-import { verify, hash } from "argon2";
 
 @Entity()
 export class User extends BaseEntity {
@@ -17,6 +17,7 @@ export class User extends BaseEntity {
     phone: string,
     password: string,
     roles: string,
+    active: boolean,
   ) {
     super();
     this.firstName = firstName;
@@ -25,6 +26,7 @@ export class User extends BaseEntity {
     this.phone = phone;
     this.password = password; // keep plain text, will be hashed via hooks
     this.roles = roles;
+    this.active = active;
   }
 
   @BeforeCreate()
@@ -59,4 +61,7 @@ export class User extends BaseEntity {
 
   @Property()
   roles!: string | null;
+
+  @Property({ default: true })
+  active: boolean = true;
 }
